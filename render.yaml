@@ -1,0 +1,54 @@
+services:
+  - type: keyvalue
+    name: rydex-realtime-cache
+    plan: starter
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+    persistenceMode: off
+
+  - type: web
+    name: rydex-platform-backend
+    runtime: node
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci && npm run prisma:generate && npm run build
+    startCommand: npm run prisma:deploy && npm run start:prod
+    healthCheckPath: /api/v1/health/ready
+    autoDeployTrigger: off
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PREFIX
+        value: api/v1
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: rydex-realtime-cache
+          property: connectionString
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GOOGLE_ROUTES_API_KEY
+        sync: false
+      - key: PAYMENT_GATEWAY
+        value: razorpay
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
