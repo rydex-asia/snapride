@@ -1,0 +1,342 @@
+{
+  "shared": {
+    "brandName": "RYDEX",
+    "profile": {
+      "name": "Kiran",
+      "phone": "+91 99001 12233",
+      "email": "kiran@example.com",
+      "memberSince": "July 2022",
+      "walletBalance": "₹460",
+      "totalRides": "128",
+      "rewards": "1,240"
+    }
+  },
+  "appMode": {
+    "brandTagline": "Your Ride, On Time",
+    "searchPlaceholder": "Enter pickup location",
+    "tabs": [
+      {
+        "key": "Ride"
+      },
+      {
+        "key": "Metro"
+      },
+      {
+        "key": "Parcel",
+        "label": "Services"
+      },
+      {
+        "key": "Travel"
+      },
+      {
+        "key": "Profile"
+      }
+    ],
+    "suggestions": [
+      {
+        "id": "bike",
+        "title": "Bike",
+        "image": "https://img.icons8.com/fluency/96/motorcycle.png"
+      },
+      {
+        "id": "auto",
+        "title": "Auto",
+        "image": "https://img.icons8.com/fluency/96/auto-rickshaw.png"
+      },
+      {
+        "id": "parcel",
+        "title": "Send parcels",
+        "image": "https://img.icons8.com/fluency/96/delivery.png"
+      }
+    ],
+    "banners": [
+      {
+        "id": "offers",
+        "section": "Offers For You",
+        "title": "Weekend Ride Pass",
+        "subtitle": "Save up to 30% on your next 5 rides",
+        "cta": "Activate now",
+        "image": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=60"
+      },
+      {
+        "id": "safety",
+        "section": "Safety Updates",
+        "title": "Night ride protection",
+        "subtitle": "Live trip share and emergency help in one tap",
+        "cta": "Explore safety",
+        "image": "https://images.unsplash.com/photo-1515170448762-4f8617ffc83e?auto=format&fit=crop&w=1200&q=60"
+      }
+    ],
+    "parcel": {
+      "heading": "Services",
+      "subheading": "Go anywhere, get anything",
+      "courierHeading": "Get Courier to help",
+      "top": [
+        {
+          "id": "auto",
+          "title": "Auto",
+          "image": "https://img.icons8.com/fluency/96/auto-rickshaw.png"
+        },
+        {
+          "id": "trip",
+          "title": "Trip",
+          "image": "https://img.icons8.com/fluency/96/car.png",
+          "badge": "₹6"
+        }
+      ],
+      "mid": [
+        {
+          "id": "bike",
+          "title": "Bike",
+          "image": "https://img.icons8.com/fluency/96/motorcycle.png",
+          "badge": "₹6"
+        },
+        {
+          "id": "rentals",
+          "title": "Rentals",
+          "image": "https://img.icons8.com/fluency/96/car-rental.png"
+        },
+        {
+          "id": "intercity",
+          "title": "Intercity",
+          "image": "https://img.icons8.com/fluency/96/taxi.png"
+        }
+      ],
+      "bottom": [
+        {
+          "id": "transit",
+          "title": "Transit",
+          "image": "https://img.icons8.com/fluency/96/train.png"
+        },
+        {
+          "id": "reserve",
+          "title": "Reserve",
+          "image": "https://img.icons8.com/fluency/96/planner.png",
+          "badge": "Promo"
+        },
+        {
+          "id": "teens",
+          "title": "Teens",
+          "image": "https://img.icons8.com/fluency/96/student-male.png"
+        },
+        {
+          "id": "seniors",
+          "title": "Seniors",
+          "image": "https://img.icons8.com/fluency/96/old-man.png"
+        }
+      ],
+      "courier": [
+        {
+          "id": "send",
+          "title": "Send parcels",
+          "image": "https://img.icons8.com/fluency/96/delivery.png",
+          "badge": "50%"
+        },
+        {
+          "id": "pickup",
+          "title": "Store pick-up",
+          "image": "https://img.icons8.com/fluency/96/shop.png"
+        }
+      ]
+    },
+    "profile": {
+      "menuItems": [
+        {
+          "key": "help",
+          "title": "Help"
+        },
+        {
+          "key": "parcel",
+          "title": "Parcel - Send Items"
+        },
+        {
+          "key": "payment",
+          "title": "Payment"
+        },
+        {
+          "key": "rides",
+          "title": "My Rides"
+        },
+        {
+          "key": "safety",
+          "title": "Safety"
+        },
+        {
+          "key": "refer",
+          "title": "Refer and Earn",
+          "subtitle": "Get ₹50"
+        },
+        {
+          "key": "rewards",
+          "title": "My Rewards"
+        }
+      ],
+      "details": [
+        {
+          "key": "name",
+          "label": "Name",
+          "value": "Kiran",
+          "clickable": true
+        },
+        {
+          "key": "phone",
+          "label": "Phone Number",
+          "value": "+91 99001 12233",
+          "clickable": false
+        },
+        {
+          "key": "email",
+          "label": "Email",
+          "value": "kiran@example.com",
+          "clickable": true
+        },
+        {
+          "key": "gender",
+          "label": "Gender",
+          "value": "Male",
+          "clickable": false
+        },
+        {
+          "key": "dob",
+          "label": "Date of Birth",
+          "value": "12/08/1998",
+          "clickable": true
+        },
+        {
+          "key": "member",
+          "label": "Member Since",
+          "value": "July 2022",
+          "clickable": false
+        },
+        {
+          "key": "emergency",
+          "label": "Emergency contact",
+          "value": "Bunny",
+          "clickable": true
+        }
+      ]
+    }
+  },
+  "websiteMode": {
+    "navLinks": [
+      {
+        "label": "Services",
+        "href": "#services"
+      },
+      {
+        "label": "Book",
+        "href": "#booking"
+      }
+    ],
+    "hero": {
+      "eyebrow": "City rides, parcels, travel",
+      "title": "Rydex on web, built from your app flow.",
+      "subtitle": "Suggestions, quick booking, stop management, profile controls, and smart route handoff to street maps.",
+      "primaryCta": "Start a ride",
+      "secondaryCta": "See services"
+    },
+    "preview": {
+      "title": "Current Ride",
+      "pickup": "Pickup: Dilsukhnagar Metro",
+      "drop": "Drop: HITEC City Junction",
+      "payLabel": "Pay",
+      "cancelLabel": "Cancel",
+      "etaLabel": "ETA",
+      "etaValue": "12 min"
+    },
+    "services": {
+      "heading": "Suggestions",
+      "subtitle": "Reference look from your mobile app with real graphics.",
+      "items": [
+        {
+          "id": "auto",
+          "title": "Auto",
+          "image": "https://img.icons8.com/color/96/auto-rickshaw.png"
+        },
+        {
+          "id": "bike",
+          "title": "Bike",
+          "image": "https://img.icons8.com/color/96/motorcycle.png"
+        },
+        {
+          "id": "trip",
+          "title": "Trip",
+          "image": "https://img.icons8.com/color/96/car--v1.png"
+        },
+        {
+          "id": "parcel",
+          "title": "Send parcels",
+          "image": "https://img.icons8.com/color/96/delivery.png"
+        },
+        {
+          "id": "rentals",
+          "title": "Rentals",
+          "image": "https://img.icons8.com/color/96/rent.png"
+        },
+        {
+          "id": "intercity",
+          "title": "Intercity",
+          "image": "https://img.icons8.com/color/96/taxi.png"
+        },
+        {
+          "id": "transit",
+          "title": "Transit",
+          "image": "https://img.icons8.com/color/96/train.png"
+        },
+        {
+          "id": "reserve",
+          "title": "Reserve",
+          "image": "https://img.icons8.com/color/96/planner.png"
+        }
+      ]
+    },
+    "banners": {
+      "heading": "Highlights",
+      "subtitle": "Sliding banners similar to app promotions.",
+      "items": [
+        {
+          "id": "ride-offer",
+          "tag": "Ride Offer",
+          "title": "20% off on evening rides",
+          "image": "https://images.unsplash.com/photo-1520262494112-9fe481d36ec3?auto=format&fit=crop&w=600&q=60"
+        },
+        {
+          "id": "parcel-drop",
+          "tag": "Parcel Drop",
+          "title": "Fast pickup in 10 minutes",
+          "image": "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=600&q=60"
+        },
+        {
+          "id": "intercity",
+          "tag": "Intercity",
+          "title": "Weekend routes now live",
+          "image": "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?auto=format&fit=crop&w=600&q=60"
+        }
+      ]
+    },
+    "booking": {
+      "heading": "Pickup and Drop",
+      "subtitle": "Use current location, add stops, then preview the street route on the same page.",
+      "helperTitle": "How Continue works",
+      "helperSteps": [
+        "Pickup, stops, and drop are combined in order.",
+        "The street route is drawn directly on the in-page map.",
+        "Distance and ETA are calculated from the route preview."
+      ],
+      "continueLabel": "Continue"
+    },
+    "profile": {
+      "heading": "Profile",
+      "subtitle": "First-level options + editable user details, like app flow.",
+      "menuItems": [
+        "Help",
+        "Payment",
+        "My Rides",
+        "Safety",
+        "Refer and Earn"
+      ],
+      "openLabel": "Open",
+      "saveLabel": "Save profile"
+    }
+  }
+}

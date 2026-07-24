@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "RYDEX",
+    "slug": "rider-native",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#EAF2FA",
+      "translucent": false
+    },
+    "plugins": [
+      "expo-notifications"
+    ],
+    "android": {
+      "package": "com.kiran_kotholla.ridernative",
+      "minSdkVersion": 24
+    },
+    "ios": {
+      "bundleIdentifier": "com.kiran-kotholla.ridernative",
+      "deploymentTarget": "16.0"
+    },
+    "extra": {
+      "nativeMaps": {
+        "androidConfigured": false,
+        "iosConfigured": false
+      },
+      "eas": {
+        "projectId": "0fcfce7e-1628-4198-b3f7-e064c014aa98"
+      }
+    },
+    "owner": "kiran_kotholla"
+  }
+}

@@ -1,0 +1,32 @@
+import * as Joi from 'joi';
+
+export const validationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
+  PORT: Joi.number().port().default(4000),
+  API_PREFIX: Joi.string().default('api/v1'),
+  DATABASE_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }).required(),
+  DIRECT_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }).required(),
+  REDIS_URL: Joi.string().uri({ scheme: ['redis', 'rediss'] }).required(),
+  SUPABASE_URL: Joi.string().uri({ scheme: ['https'] }).required(),
+  SUPABASE_PUBLISHABLE_KEY: Joi.string().min(20).required(),
+  SUPABASE_SERVICE_ROLE_KEY: Joi.string().min(20).required(),
+  CORS_ORIGINS: Joi.string().allow('').default(''),
+  PAYMENT_GATEWAY: Joi.string().valid('mock', 'razorpay').default('mock'),
+  RAZORPAY_KEY_ID: Joi.string().allow('').optional(),
+  RAZORPAY_KEY_SECRET: Joi.string().allow('').optional(),
+  RAZORPAY_WEBHOOK_SECRET: Joi.string().allow('').optional(),
+  GOOGLE_ROUTES_API_KEY: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().min(20).required(),
+    otherwise: Joi.string().allow('').default(''),
+  }),
+  GOOGLE_ROUTES_CACHE_TTL_SECONDS: Joi.number().integer().min(10).max(300).default(45),
+  GOOGLE_ROUTES_TIMEOUT_MS: Joi.number().integer().min(1000).max(20000).default(7000),
+  GOOGLE_ROUTES_MAX_RETRIES: Joi.number().integer().min(0).max(5).default(3),
+  GOOGLE_ROUTES_DAILY_QUOTA: Joi.number().integer().min(100).default(10000),
+  LOCATION_RAW_RETENTION_HOURS: Joi.number().integer().min(1).max(168).default(24),
+  SENTRY_DSN: Joi.string().uri().allow('').default(''),
+  SENTRY_ENVIRONMENT: Joi.string().default(Joi.ref('NODE_ENV')),
+  SENTRY_RELEASE: Joi.string().allow('').default(''),
+  SENTRY_TRACES_SAMPLE_RATE: Joi.number().min(0).max(1).default(0.1),
+});

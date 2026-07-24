@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RYDEX Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=20260508-1" />
+  </head>
+  <body>
+    <section class="login-view" id="loginView">
+      <div class="login-card">
+        <p class="eyebrow">Studio Access</p>
+        <h1>RYDEX Studio Login</h1>
+        <p class="muted">Sign in before editing App Mode and Website Mode content.</p>
+
+        <form id="loginForm" class="login-form">
+          <label>
+            Admin ID
+            <input id="loginAdminId" type="text" autocomplete="username" />
+          </label>
+          <label>
+            Password
+            <input id="loginPassword" type="password" autocomplete="current-password" />
+          </label>
+          <button id="loginBtn" type="submit" class="primary-btn full-btn">Login</button>
+          <p id="loginStatus" class="status-text">Enter your Studio credentials.</p>
+        </form>
+      </div>
+    </section>
+
+    <div class="shell hidden" id="studioShell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Unified Studio</p>
+          <h1>RYDEX Studio</h1>
+          <p class="muted">One editor for the Expo app and the website, split into App Mode and Website Mode.</p>
+        </div>
+        <div class="topbar-actions">
+          <p id="authBadge" class="auth-badge hidden"></p>
+          <button id="resetBtn" type="button" class="ghost-btn">Reset to default</button>
+          <button id="exportBtn" type="button" class="ghost-btn">Export JSON</button>
+          <button id="saveBtn" type="button" class="primary-btn">Save changes</button>
+          <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
+        </div>
+      </header>
+
+      <section class="studio-dashboard" aria-label="Studio overview">
+        <article class="stat-card">
+          <span>App content</span>
+          <strong id="appStatCount">0</strong>
+          <p id="appStatMeta">Ride app collections</p>
+        </article>
+        <article class="stat-card">
+          <span>Website content</span>
+          <strong id="websiteStatCount">0</strong>
+          <p id="websiteStatMeta">Website collections</p>
+        </article>
+        <article class="stat-card">
+          <span>Profile data</span>
+          <strong id="profileStatCount">0</strong>
+          <p id="profileStatMeta">Shared rider fields</p>
+        </article>
+        <article class="stat-card live-card">
+          <span>Status</span>
+          <strong id="studioHealthText">Ready</strong>
+          <p>Autosync-ready JSON editor</p>
+        </article>
+      </section>
+
+      <section class="panel studio-tools">
+        <div class="tool-search">
+          <span class="search-icon">Search</span>
+          <input id="studioSearch" type="search" placeholder="Search studio sections, cards, labels..." />
+          <button id="clearSearchBtn" type="button" class="ghost-btn small-btn">Clear</button>
+        </div>
+        <div class="tool-actions">
+          <button id="importBtn" type="button" class="ghost-btn">Import JSON</button>
+          <input id="importFile" class="hidden" type="file" accept="application/json,.json" />
+          <a class="ghost-btn link-btn" href="/website/" target="_blank" rel="noreferrer">Open website</a>
+        </div>
+      </section>
+
+      <section class="panel shared-panel">
+        <div class="section-head">
+          <div>
+            <h2>Shared Data</h2>
+            <p class="muted">Brand and profile data used across app and website.</p>
+          </div>
+          <p id="saveStatus" class="status-text">Ready</p>
+        </div>
+        <div class="form-grid three-col compact-grid">
+          <label>
+            Brand name
+            <input id="sharedBrandName" type="text" />
+          </label>
+          <label>
+            Profile name
+            <input id="sharedProfileName" type="text" />
+          </label>
+          <label>
+            Profile phone
+            <input id="sharedProfilePhone" type="text" />
+          </label>
+          <label class="full-row">
+            Profile email
+            <input id="sharedProfileEmail" type="email" />
+          </label>
+          <label>
+            Member since
+            <input id="sharedProfileMemberSince" type="text" />
+          </label>
+          <label>
+            Wallet balance
+            <input id="sharedProfileWalletBalance" type="text" />
+          </label>
+          <label>
+            Total trips
+            <input id="sharedProfileTotalRides" type="text" />
+          </label>
+          <label class="full-row">
+            Benefits / rewards
+            <input id="sharedProfileRewards" type="text" />
+          </label>
+        </div>
+      </section>
+
+      <section class="panel mode-panel">
+        <div class="mode-panel-layout">
+          <div>
+            <div class="mode-tabs" id="modeTabs">
+              <button class="mode-chip active" type="button" data-mode="app">App Mode</button>
+              <button class="mode-chip" type="button" data-mode="website">Website Mode</button>
+            </div>
+            <p id="modeSummary" class="muted">Editing app-facing ride home, services, profile, and bottom-tab content.</p>
+          </div>
+          <aside class="mode-preview" aria-live="polite">
+            <span id="previewEyebrow">Preview</span>
+            <strong id="previewTitle">Ride app</strong>
+            <p id="previewBody">Bottom tabs, ride home cards, service groups, banners, and profile rows.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="appModePanel" class="panel mode-content">
+        <div class="section-head">
+          <div>
+            <h2>App Mode</h2>
+            <p class="muted">Controls the Expo rider app layout data.</p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Header</h3>
+                <p class="muted">Basic app header content.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Brand tagline
+                <input id="appBrandTagline" type="text" />
+              </label>
+              <label>
+                Search placeholder
+                <input id="appSearchPlaceholder" type="text" />
+              </label>
+            </div>
+          </div>
+
+          <div id="appTabsEditor"></div>
+          <div id="appSuggestionsEditor"></div>
+          <div id="appBannersEditor"></div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Services Tab</h3>
+                <p class="muted">Title and service groups shown in the Services tab.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Services heading
+                <input id="appParcelHeading" type="text" />
+              </label>
+              <label>
+                Services subheading
+                <input id="appParcelSubheading" type="text" />
+              </label>
+              <label class="full-row">
+                Featured section heading
+                <input id="appParcelCourierHeading" type="text" />
+              </label>
+            </div>
+          </div>
+
+          <div id="appParcelTopEditor"></div>
+          <div id="appParcelMidEditor"></div>
+          <div id="appParcelBottomEditor"></div>
+          <div id="appParcelCourierEditor"></div>
+          <div id="appProfileDetailsEditor"></div>
+        </div>
+      </section>
+
+      <section id="websiteModePanel" class="panel mode-content hidden">
+        <div class="section-head">
+          <div>
+            <h2>Website Mode</h2>
+            <p class="muted">Controls the static website copy, services, banners, booking, and profile sections.</p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div id="webNavLinksEditor"></div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Hero</h3>
+                <p class="muted">Main website headline and actions.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Hero eyebrow
+                <input id="webHeroEyebrow" type="text" />
+              </label>
+              <label>
+                Hero title
+                <input id="webHeroTitle" type="text" />
+              </label>
+              <label class="full-row">
+                Hero subtitle
+                <textarea id="webHeroSubtitle" class="short-area"></textarea>
+              </label>
+              <label>
+                Hero primary CTA
+                <input id="webHeroPrimaryCta" type="text" />
+              </label>
+              <label>
+                Hero secondary CTA
+                <input id="webHeroSecondaryCta" type="text" />
+              </label>
+            </div>
+          </div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Ride Preview</h3>
+                <p class="muted">Current ride card shown in the hero section.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Preview title
+                <input id="webPreviewTitle" type="text" />
+              </label>
+              <label>
+                Preview ETA value
+                <input id="webPreviewEtaValue" type="text" />
+              </label>
+              <label>
+                Preview pickup line
+                <input id="webPreviewPickup" type="text" />
+              </label>
+              <label>
+                Preview drop line
+                <input id="webPreviewDrop" type="text" />
+              </label>
+              <label>
+                Preview pay label
+                <input id="webPreviewPayLabel" type="text" />
+              </label>
+              <label>
+                Preview cancel label
+                <input id="webPreviewCancelLabel" type="text" />
+              </label>
+            </div>
+          </div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Services Section</h3>
+                <p class="muted">Heading and service cards for the website suggestions section.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Services heading
+                <input id="webServicesHeading" type="text" />
+              </label>
+              <label>
+                Services subtitle
+                <input id="webServicesSubtitle" type="text" />
+              </label>
+            </div>
+          </div>
+          <div id="webServicesEditor"></div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Highlights Section</h3>
+                <p class="muted">Heading and banner cards for the website slider.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Banner heading
+                <input id="webBannersHeading" type="text" />
+              </label>
+              <label>
+                Banner subtitle
+                <input id="webBannersSubtitle" type="text" />
+              </label>
+            </div>
+          </div>
+          <div id="webBannersEditor"></div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Booking Section</h3>
+                <p class="muted">Booking section copy and helper steps.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Booking heading
+                <input id="webBookingHeading" type="text" />
+              </label>
+              <label>
+                Booking subtitle
+                <input id="webBookingSubtitle" type="text" />
+              </label>
+              <label>
+                Booking helper title
+                <input id="webBookingHelperTitle" type="text" />
+              </label>
+              <label>
+                Continue button label
+                <input id="webBookingContinueLabel" type="text" />
+              </label>
+            </div>
+          </div>
+          <div id="webBookingStepsEditor"></div>
+
+          <div class="editor-block">
+            <div class="editor-head">
+              <div>
+                <h3>Profile Section</h3>
+                <p class="muted">Profile heading and action labels for the website layout.</p>
+              </div>
+            </div>
+            <div class="form-grid two-col compact-grid">
+              <label>
+                Profile heading
+                <input id="webProfileHeading" type="text" />
+              </label>
+              <label>
+                Profile subtitle
+                <input id="webProfileSubtitle" type="text" />
+              </label>
+              <label>
+                Profile open button label
+                <input id="webProfileOpenLabel" type="text" />
+              </label>
+              <label>
+                Profile save button label
+                <input id="webProfileSaveLabel" type="text" />
+              </label>
+            </div>
+          </div>
+          <div id="webProfileMenuEditor"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./script.js?v=20260508-1"></script>
+  </body>
+</html>

@@ -1,0 +1,585 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  CUSTOMER
+  PARTNER
+  ADMIN
+  STORE_OWNER
+}
+
+enum SourceApp {
+  RIDE_APP
+  FREZO_APP
+  PARTNER_APP
+  ADMIN_PANEL
+}
+
+enum OrderType {
+  RIDE
+  PARCEL
+  GROCERY
+}
+
+enum VehicleType {
+  BIKE
+  AUTO
+  CAB
+}
+
+enum PartnerStatus {
+  OFFLINE
+  ONLINE
+  BUSY
+  SUSPENDED
+}
+
+enum RideStatus {
+  SEARCHING
+  ACCEPTED
+  ARRIVED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ParcelStatus {
+  SEARCHING
+  ACCEPTED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum GroceryOrderStatus {
+  CREATED
+  CONFIRMED
+  PACKING
+  SEARCHING_PARTNER
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+  CANCELLED
+}
+
+enum DispatchStatus {
+  QUEUED
+  ASSIGNED
+  ACCEPTED
+  EXPIRED
+  REASSIGNING
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  CASH
+  UPI
+  CARD
+  WALLET
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  SOCKET
+}
+
+enum SupportRequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  authUserId   String?  @unique @db.Uuid
+  phone        String?  @unique
+  email        String?  @unique
+  passwordHash String?
+  fullName     String?
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  partner       Partner?
+  stores        Store[]
+  rideOrders    RideOrder[]    @relation("CustomerRideOrders")
+  parcelOrders  ParcelOrder[]  @relation("CustomerParcelOrders")
+  groceryOrders GroceryOrder[] @relation("CustomerGroceryOrders")
+  groceryCart   GroceryCart?
+  deliveryAddresses DeliveryAddress[]
+  wallet        Wallet?
+  payments      Payment[]
+  notifications Notification[]
+  pushTokens    PushToken[]
+  supportRequests GrocerySupportRequest[]
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Partner {
+  id            String        @id @default(uuid())
+  userId        String        @unique
+  status        PartnerStatus @default(OFFLINE)
+  rating        Decimal       @default(5.0) @db.Decimal(3, 2)
+  totalEarnings Decimal       @default(0) @db.Decimal(12, 2)
+  activeOrderId String?
+  activeOrderType OrderType?
+  latitude      Decimal?      @db.Decimal(10, 7)
+  longitude     Decimal?      @db.Decimal(10, 7)
+  heading       Decimal?      @db.Decimal(6, 2)
+  lastSeenAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles   Vehicle[]
+  rideOrders RideOrder[]
+  parcelOrders ParcelOrder[]
+  groceryOrders GroceryOrder[]
+  locations PartnerLocation[]
+  dispatchJobs DispatchJob[]
+
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([activeOrderType, activeOrderId])
+}
+
+model Vehicle {
+  id            String      @id @default(uuid())
+  partnerId     String
+  type          VehicleType
+  make          String?
+  model         String?
+  plateNumber   String      @unique
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+  @@index([type, isActive])
+}
+
+model RideOrder {
+  id              String      @id @default(uuid())
+  sourceApp       SourceApp
+  customerId      String
+  partnerId       String?
+  vehicleType     VehicleType
+  status          RideStatus  @default(SEARCHING)
+  pickupAddress   String
+  pickupLat       Decimal     @db.Decimal(10, 7)
+  pickupLng       Decimal     @db.Decimal(10, 7)
+  dropAddress     String
+  dropLat         Decimal     @db.Decimal(10, 7)
+  dropLng         Decimal     @db.Decimal(10, 7)
+  distanceMeters  Int?
+  durationSeconds Int?
+  estimatedFare   Decimal     @db.Decimal(10, 2)
+  finalFare       Decimal?    @db.Decimal(10, 2)
+  otpHash         String?
+  acceptedAt      DateTime?
+  arrivedAt       DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  customer User     @relation("CustomerRideOrders", fields: [customerId], references: [id])
+  partner  Partner? @relation(fields: [partnerId], references: [id])
+  dispatchJobs DispatchJob[]
+  payments Payment[]
+
+  @@index([sourceApp, status])
+  @@index([customerId, createdAt])
+  @@index([partnerId, status])
+  @@index([pickupLat, pickupLng])
+}
+
+model ParcelOrder {
+  id              String       @id @default(uuid())
+  sourceApp       SourceApp
+  customerId      String
+  partnerId       String?
+  status          ParcelStatus @default(SEARCHING)
+  senderName      String
+  senderPhone     String
+  receiverName    String
+  receiverPhone   String
+  pickupAddress   String
+  pickupLat       Decimal      @db.Decimal(10, 7)
+  pickupLng       Decimal      @db.Decimal(10, 7)
+  dropAddress     String
+  dropLat         Decimal      @db.Decimal(10, 7)
+  dropLng         Decimal      @db.Decimal(10, 7)
+  notes           String?
+  estimatedFare   Decimal      @db.Decimal(10, 2)
+  finalFare       Decimal?     @db.Decimal(10, 2)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  customer User     @relation("CustomerParcelOrders", fields: [customerId], references: [id])
+  partner  Partner? @relation(fields: [partnerId], references: [id])
+  dispatchJobs DispatchJob[]
+  payments Payment[]
+
+  @@index([sourceApp, status])
+  @@index([customerId, createdAt])
+  @@index([partnerId, status])
+}
+
+model Store {
+  id          String   @id @default(uuid())
+  ownerId     String
+  name        String
+  phone       String?
+  address     String
+  latitude    Decimal  @db.Decimal(10, 7)
+  longitude   Decimal  @db.Decimal(10, 7)
+  serviceRadiusKm Decimal @default(8) @db.Decimal(6, 2)
+  averagePickingMinutes Int @default(5)
+  averageDeliverySpeedKph Decimal @default(18) @db.Decimal(6, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner    User @relation(fields: [ownerId], references: [id])
+  products Product[]
+  orders   GroceryOrder[]
+  carts    GroceryCart[]
+
+  @@index([ownerId])
+  @@index([isActive])
+  @@index([latitude, longitude])
+}
+
+model DeliveryAddress {
+  id            String   @id @default(uuid())
+  userId        String
+  label         String
+  addressLine   String
+  house         String?
+  landmark      String?
+  deliveryInstructions String?
+  recipientName String
+  phone         String
+  latitude      Decimal  @db.Decimal(10, 7)
+  longitude     Decimal  @db.Decimal(10, 7)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String?  @unique
+  imageKey  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  sku         String?  @unique
+  storeId     String
+  categoryId  String?
+  name        String
+  brand       String?
+  unit        String?
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  mrp         Decimal? @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  imageUrl    String?
+  imageKey    String?
+  variantGroup String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+  items    GroceryOrderItem[]
+  cartItems GroceryCartItem[]
+
+  @@index([storeId, isActive])
+  @@index([categoryId])
+}
+
+model GroceryCart {
+  id         String   @id @default(uuid())
+  customerId String   @unique
+  storeId    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  store    Store?             @relation(fields: [storeId], references: [id])
+  items    GroceryCartItem[]
+
+  @@index([storeId])
+}
+
+model GroceryCartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    GroceryCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product     @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@index([productId])
+}
+
+model GroceryOrder {
+  id              String             @id @default(uuid())
+  sourceApp       SourceApp
+  customerId      String
+  storeId         String
+  partnerId       String?
+  status          GroceryOrderStatus @default(CREATED)
+  deliveryAddress String
+  deliveryLat     Decimal            @db.Decimal(10, 7)
+  deliveryLng     Decimal            @db.Decimal(10, 7)
+  subtotal        Decimal            @db.Decimal(10, 2)
+  deliveryFee     Decimal            @db.Decimal(10, 2)
+  total           Decimal            @db.Decimal(10, 2)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  customer User     @relation("CustomerGroceryOrders", fields: [customerId], references: [id])
+  store    Store    @relation(fields: [storeId], references: [id])
+  partner  Partner? @relation(fields: [partnerId], references: [id])
+  items    GroceryOrderItem[]
+  dispatchJobs DispatchJob[]
+  payments Payment[]
+  statusEvents GroceryOrderStatusEvent[]
+  supportRequests GrocerySupportRequest[]
+
+  @@index([sourceApp, status])
+  @@index([customerId, createdAt])
+  @@index([storeId, status])
+  @@index([partnerId, status])
+}
+
+model GroceryOrderStatusEvent {
+  id        String             @id @default(uuid())
+  orderId   String
+  status    GroceryOrderStatus
+  title     String
+  detail    String?
+  actorId   String?
+  createdAt DateTime           @default(now())
+
+  order GroceryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+model GrocerySupportRequest {
+  id          String               @id @default(uuid())
+  orderId     String
+  customerId  String
+  category    String
+  message     String?
+  status      SupportRequestStatus @default(OPEN)
+  resolution  String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  order    GroceryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer User         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, status])
+  @@index([orderId, createdAt])
+}
+
+model GroceryOrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  order   GroceryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model DispatchJob {
+  id          String         @id @default(uuid())
+  sourceApp   SourceApp
+  orderType   OrderType
+  orderId     String
+  status      DispatchStatus @default(QUEUED)
+  partnerId   String?
+  attempts    Int            @default(0)
+  priority    Int            @default(100)
+  expiresAt   DateTime?
+  acceptedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  partner      Partner?      @relation(fields: [partnerId], references: [id])
+  rideOrder    RideOrder?    @relation(fields: [rideOrderId], references: [id])
+  rideOrderId  String?
+  parcelOrder  ParcelOrder?  @relation(fields: [parcelOrderId], references: [id])
+  parcelOrderId String?
+  groceryOrder GroceryOrder? @relation(fields: [groceryOrderId], references: [id])
+  groceryOrderId String?
+
+  @@index([status, priority, createdAt])
+  @@index([orderType, orderId])
+  @@index([partnerId, status])
+}
+
+model PartnerLocation {
+  id        String   @id @default(uuid())
+  partnerId String
+  latitude  Decimal  @db.Decimal(10, 7)
+  longitude Decimal  @db.Decimal(10, 7)
+  heading   Decimal? @db.Decimal(6, 2)
+  speedMps  Decimal? @db.Decimal(8, 2)
+  accuracyM Decimal? @db.Decimal(8, 2)
+  createdAt DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, createdAt])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id             String          @id @default(uuid())
+  userId         String
+  provider       PaymentProvider
+  status         PaymentStatus   @default(PENDING)
+  amount         Decimal         @db.Decimal(10, 2)
+  currency       String          @default("INR")
+  externalRef    String?
+  gatewayOrderId String?         @unique
+  gatewayPaymentId String?       @unique
+  idempotencyKey String?         @unique
+  failureReason  String?
+  verifiedAt     DateTime?
+  metadata       Json?
+  rideOrderId    String?
+  parcelOrderId  String?
+  groceryOrderId String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  rideOrder    RideOrder?    @relation(fields: [rideOrderId], references: [id])
+  parcelOrder  ParcelOrder?  @relation(fields: [parcelOrderId], references: [id])
+  groceryOrder GroceryOrder? @relation(fields: [groceryOrderId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([groceryOrderId, status])
+}
+
+model PaymentWebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String
+  eventId     String   @unique
+  eventType   String
+  processedAt DateTime @default(now())
+
+  @@index([provider, eventType])
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String
+  channel   NotificationChannel
+  title     String
+  body      String
+  metadata  Json?
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  platform  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+}

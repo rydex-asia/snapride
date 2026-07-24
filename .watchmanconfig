@@ -1,0 +1,14 @@
+{
+  "ignore_dirs": [
+    "android",
+    "ios",
+    "backend",
+    "node_modules/@shopify/react-native-skia/android",
+    "node_modules/@shopify/react-native-skia/libs",
+    "node_modules/@shopify/react-native-skia/cpp",
+    "node_modules/react-native-reanimated/android",
+    "node_modules/react-native-worklets/android",
+    "node_modules/react-native-screens/android",
+    "node_modules/react-native-gesture-handler/android"
+  ]
+}

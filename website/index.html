@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RYDEX Web</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./styles.css?v=20260313-1" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <header class="site-header" id="top">
+      <div class="brand" id="siteBrand">RYDEX</div>
+      <nav class="nav-links" id="navLinks"></nav>
+      <div class="header-actions">
+        <a class="header-btn" href="#booking" id="headerBookBtn">Book Now</a>
+        <button class="profile-icon-btn" id="headerProfileBtn" type="button" aria-label="Open profile">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 12c2.761 0 5-2.462 5-5.5S14.761 1 12 1 7 3.462 7 6.5 9.239 12 12 12Zm0 2c-4.418 0-8 2.91-8 6.5 0 .828.672 1.5 1.5 1.5h13c.828 0 1.5-.672 1.5-1.5 0-3.59-3.582-6.5-8-6.5Z"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero section-shell">
+        <div class="hero-copy">
+          <p class="eyebrow" id="heroEyebrow"></p>
+          <h1 id="heroTitle"></h1>
+          <p class="hero-sub" id="heroSubtitle"></p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#booking" id="heroPrimaryBtn"></a>
+            <a class="btn btn-ghost" href="#services" id="heroSecondaryBtn"></a>
+          </div>
+        </div>
+        <div class="hero-preview">
+          <div class="preview-card">
+            <h3 id="previewTitle"></h3>
+            <p id="previewPickup"></p>
+            <p id="previewDrop"></p>
+            <div class="ride-actions">
+              <button type="button" id="previewPayBtn"></button>
+              <button type="button" id="previewCancelBtn"></button>
+            </div>
+          </div>
+          <div class="preview-meter">
+            <span id="previewEtaLabel"></span>
+            <strong id="previewEtaValue"></strong>
+          </div>
+        </div>
+      </section>
+
+      <section id="services" class="section-shell">
+        <div class="section-head">
+          <h2 id="servicesHeading"></h2>
+          <p id="servicesSubtitle"></p>
+        </div>
+        <div class="service-grid" id="servicesGrid"></div>
+      </section>
+
+      <section class="section-shell">
+        <div class="section-head">
+          <h2 id="bannersHeading"></h2>
+          <p id="bannersSubtitle"></p>
+        </div>
+        <div class="banner-wrap">
+          <div class="banner-track" id="bannerTrack"></div>
+        </div>
+      </section>
+
+      <section id="booking" class="section-shell booking-section">
+        <div class="section-head">
+          <h2 id="bookingHeading"></h2>
+          <p id="bookingSubtitle"></p>
+        </div>
+        <div class="booking-layout">
+          <form id="bookingForm" class="booking-form">
+            <label for="pickupAddress">Pickup</label>
+            <input id="pickupAddress" name="pickupAddress" type="text" placeholder="Enter pickup address" required />
+
+            <button id="useCurrentBtn" class="inline-btn" type="button">Use current location</button>
+
+            <div id="stopsContainer"></div>
+            <button id="addStopBtn" class="inline-btn" type="button">Add stop</button>
+
+            <label for="dropAddress">Drop</label>
+            <input id="dropAddress" name="dropAddress" type="text" placeholder="Enter destination address" required />
+
+            <button class="btn btn-primary full" type="submit" id="continueBtn"></button>
+            <p id="bookingStatus" class="status-text"></p>
+          </form>
+
+          <aside class="booking-side">
+            <div id="bookingMap" class="booking-map"></div>
+            <div class="booking-side-copy">
+              <div class="booking-side-head">
+                <h3 id="bookingHelperTitle"></h3>
+                <p id="routeSummary" class="route-summary">Set pickup and drop to preview the street route.</p>
+              </div>
+              <ol id="bookingHelperSteps"></ol>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>RYDEX Web Prototype</p>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <div class="profile-modal hidden" id="profileModal">
+      <div class="profile-modal-backdrop" id="profileModalBackdrop"></div>
+      <div class="profile-modal-card">
+        <div class="profile-modal-head">
+          <div>
+            <h2 id="profileHeading"></h2>
+            <p id="profileSubtitle"></p>
+          </div>
+          <button class="profile-close-btn" id="closeProfileModalBtn" type="button" aria-label="Close profile">
+            ×
+          </button>
+        </div>
+
+        <div class="profile-layout">
+          <div class="profile-menu">
+            <button id="openDetailsBtn" class="profile-main" type="button">
+              <div>
+                <strong id="menuName"></strong>
+                <p id="menuPhone"></p>
+              </div>
+              <span id="openDetailsLabel"></span>
+            </button>
+
+            <ul id="profileMenuList"></ul>
+          </div>
+
+          <form id="profileDetailsForm" class="profile-details">
+            <h3>Edit profile details</h3>
+            <label for="nameInput">Name</label>
+            <input id="nameInput" type="text" />
+            <label for="phoneInput">Phone</label>
+            <input id="phoneInput" type="tel" />
+            <label for="emailInput">Email</label>
+            <input id="emailInput" type="email" />
+            <button class="btn btn-primary full" type="submit" id="profileSaveBtn"></button>
+            <p id="profileStatus" class="status-text"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="./script.js?v=20260313-1"></script>
+  </body>
+</html>
