@@ -41,12 +41,15 @@ services:
       - key: GOOGLE_ROUTES_API_KEY
         sync: false
       - key: PAYMENT_GATEWAY
-        value: razorpay
-      - key: RAZORPAY_KEY_ID
+        value: cashfree
+      - key: CASHFREE_ENVIRONMENT
+        value: PRODUCTION
+      - key: CASHFREE_CLIENT_ID
         sync: false
-      - key: RAZORPAY_KEY_SECRET
+      - key: CASHFREE_CLIENT_SECRET
         sync: false
-      - key: RAZORPAY_WEBHOOK_SECRET
+      - key: CASHFREE_API_VERSION
+        value: 2025-01-01
         sync: false
       - key: SENTRY_DSN
         sync: false
