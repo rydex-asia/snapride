@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const TRANSACTIONS = [
   { id: "t1", group: "Today", title: "Bike ride", detail: "Ride payment", time: "9:24 PM", amount: -60, state: "Paid", icon: "bike", kind: "payment" },
@@ -21,7 +21,7 @@ const FILTERS = [
 function TransactionItem({ item, isLast }) {
   const positive = item.amount > 0;
   return (
-    <View>
+    <View style={!isLast && styles.transactionSpacing}>
       <Pressable style={({ pressed }) => [styles.transaction, pressed && styles.rowPressed]}>
         <View style={[styles.transactionIcon, positive && styles.positiveIcon]}>
           <MaterialCommunityIcons name={item.icon} size={21} color={positive ? "#157457" : "#394150"} />
@@ -35,7 +35,6 @@ function TransactionItem({ item, isLast }) {
           {positive ? "+" : "−"}₹{Math.abs(item.amount)}
         </Text>
       </Pressable>
-      {!isLast ? <View style={styles.divider} /> : null}
     </View>
   );
 }
@@ -43,6 +42,7 @@ function TransactionItem({ item, isLast }) {
 export default function TransactionsScreen({ onBack }) {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState("all");
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   const groups = useMemo(() => {
     const filtered = filter === "all" ? TRANSACTIONS : TRANSACTIONS.filter((item) => item.kind === filter);
@@ -55,13 +55,20 @@ export default function TransactionsScreen({ onBack }) {
   }, [filter]);
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Transactions" eyebrow="June 2026" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Transactions"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
+        onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(30, insets.bottom + 22) }]}
       >
         <View style={styles.monthSummary}>
@@ -111,7 +118,7 @@ export default function TransactionsScreen({ onBack }) {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -119,7 +126,6 @@ const styles = StyleSheet.create({
   amount: { marginLeft: 10, color: "#202124", fontSize: 15, lineHeight: 20, fontWeight: "700" },
   amountPositive: { color: "#157457" },
   content: { paddingHorizontal: 16, paddingTop: 16 },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 70, backgroundColor: "#E2E4E7" },
   empty: { minHeight: 210, marginTop: 26, borderRadius: 18, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
   emptyText: { marginTop: 4, color: "#747780", fontSize: 12, lineHeight: 17 },
   emptyTitle: { marginTop: 10, color: "#202124", fontSize: 16, lineHeight: 21, fontWeight: "600" },
@@ -129,7 +135,7 @@ const styles = StyleSheet.create({
   filterLabelActive: { color: "#FFFFFF" },
   filters: { paddingVertical: 16, gap: 8 },
   group: { marginTop: 10 },
-  groupList: { borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
+  groupList: { backgroundColor: "transparent" },
   groupTitle: { marginBottom: 9, color: "#656970", fontSize: 13, lineHeight: 17, fontWeight: "600" },
   moneyIn: { color: "#157457", fontSize: 16, lineHeight: 21, fontWeight: "700" },
   monthSummary: {
@@ -146,12 +152,13 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.62 },
   rowPressed: { backgroundColor: "#F7F8F9" },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   summaryAmount: { marginTop: 5, color: "#202124", fontSize: 30, lineHeight: 35, fontWeight: "700" },
   summaryCaption: { marginTop: 2, color: "#747780", fontSize: 11, lineHeight: 15 },
   summaryLabel: { color: "#656970", fontSize: 13, lineHeight: 17, fontWeight: "500" },
   summaryRight: { alignItems: "flex-end" },
   transaction: { minHeight: 86, paddingHorizontal: 14, paddingVertical: 12, flexDirection: "row", alignItems: "center" },
+  transactionSpacing: { marginBottom: 10 },
   transactionCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   transactionDetail: { marginTop: 3, color: "#656970", fontSize: 12, lineHeight: 16, fontWeight: "400" },
   transactionIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },

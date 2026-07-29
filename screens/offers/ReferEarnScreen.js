@@ -38,7 +38,7 @@ export default function ReferEarnScreen({ onBack }) {
       <AccountPageHeader title="Refer & Earn" subtitle="Invite friends and earn ride rewards" onBack={onBack} />
 
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <LinearGradient colors={["#FFF4D6", "#FFE8A3"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+        <LinearGradient colors={["#EEF2FF", "#C7D2FE"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
           <Text style={styles.heroTitle}>Earn up to ₹750</Text>
           <Text style={styles.heroSubtitle}>Invite friends & get rewards when they ride</Text>
 
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: "rgba(245,158,11,0.65)"
+    backgroundColor: "rgba(79,70,229,0.65)"
   },
   coinRight: {
     position: "absolute",
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: "rgba(245,158,11,0.55)"
+    backgroundColor: "rgba(79,70,229,0.55)"
   },
   completedPill: {
     backgroundColor: "COLORS.primaryLight"
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     width: 92,
     height: 92,
     borderRadius: 18,
-    backgroundColor: "#F59E0B",
+    backgroundColor: "#4F46E5",
     alignItems: "center",
     justifyContent: "center",
     position: "relative"

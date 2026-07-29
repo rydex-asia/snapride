@@ -1,8 +1,8 @@
-import React from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const UPDATES = [
   { key: "created", time: "15 Apr · 2:15 PM", title: "Ticket created", detail: "You reported that your payment refund had not arrived.", complete: true },
@@ -30,21 +30,29 @@ function UpdateRow({ item, isLast }) {
 
 export default function TicketDetailsScreen({ onBack, onOpenChat }) {
   const insets = useSafeAreaInsets();
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Support ticket" eyebrow="#123456 · Resolved" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Support ticket"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
+        onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(32, insets.bottom + 24) }]}
       >
         <View style={styles.issueSection}>
           <View style={styles.issueTop}>
             <View style={styles.issueIcon}>
-              <MaterialCommunityIcons name="credit-card-outline" size={22} color="#8C5900" />
+              <MaterialCommunityIcons name="credit-card-outline" size={22} color="#3730A3" />
             </View>
             <View style={styles.issueCopy}>
               <Text style={styles.issueLabel}>Payment and refund</Text>
@@ -94,7 +102,7 @@ export default function TicketDetailsScreen({ onBack, onOpenChat }) {
           <MaterialCommunityIcons name="chevron-right" size={21} color="#92959B" />
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -106,9 +114,9 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 16 },
   issueCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   issueDivider: { height: StyleSheet.hairlineWidth, marginVertical: 14, backgroundColor: "#E2E4E7" },
-  issueIcon: { width: 44, height: 44, borderRadius: 15, backgroundColor: "#FFF2CC", alignItems: "center", justifyContent: "center" },
+  issueIcon: { width: 44, height: 44, borderRadius: 15, backgroundColor: "#EEF2FF", alignItems: "center", justifyContent: "center" },
   issueLabel: { color: "#8A8D93", fontSize: 10, lineHeight: 14, fontWeight: "500" },
-  issueSection: { borderRadius: 19, padding: 15, backgroundColor: "#FFFFFF" },
+  issueSection: { borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 19, padding: 15, backgroundColor: "#FFFFFF" },
   issueTitle: { marginTop: 3, color: "#202124", fontSize: 16, lineHeight: 21, fontWeight: "700" },
   issueTop: { flexDirection: "row", alignItems: "center" },
   pressed: { opacity: 0.65, transform: [{ scale: 0.99 }] },
@@ -122,7 +130,7 @@ const styles = StyleSheet.create({
   resolvedBadge: { height: 28, paddingHorizontal: 9, borderRadius: 14, backgroundColor: "#E7F5EF", flexDirection: "row", alignItems: "center", gap: 4 },
   resolvedText: { color: "#157457", fontSize: 10, lineHeight: 14, fontWeight: "700" },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   sectionTitle: { marginTop: 24, marginBottom: 10, color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
   timeline: { width: 28, alignItems: "center" },
   timelineDot: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#202124", alignItems: "center", justifyContent: "center" },
@@ -132,5 +140,5 @@ const styles = StyleSheet.create({
   updateRow: { minHeight: 86, flexDirection: "row" },
   updateTime: { color: "#92959B", fontSize: 10, lineHeight: 14, fontWeight: "500" },
   updateTitle: { marginTop: 3, color: "#303238", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  updates: { borderRadius: 18, paddingHorizontal: 14, paddingTop: 16, backgroundColor: "#FFFFFF" },
+  updates: { borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 18, paddingHorizontal: 14, paddingTop: 16, backgroundColor: "#FFFFFF" },
 });

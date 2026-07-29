@@ -66,7 +66,7 @@ export default function PreferencesScreen({ onBack, onOpenLanguage }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Preferences" subtitle="Fine-tune how Rydex behaves" onBack={onBack} />
 
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -92,9 +92,8 @@ export default function PreferencesScreen({ onBack, onOpenLanguage }) {
           <Text style={styles.sectionLabel}>App preferences</Text>
           <View style={styles.card}>
             {PREFERENCES.map((item, index) => (
-              <View key={item.key}>
+              <View key={item.key} style={index !== PREFERENCES.length - 1 && styles.rowSpacing}>
                 <PreferenceRow item={item} value={state[item.key]} onToggle={toggle(item.key)} />
-                {index !== PREFERENCES.length - 1 ? <View style={styles.divider} /> : null}
               </View>
             ))}
           </View>
@@ -113,18 +112,11 @@ export default function PreferencesScreen({ onBack, onOpenLanguage }) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 14
+    backgroundColor: "transparent",
   },
   content: {
     padding: 16,
     paddingBottom: 28
-  },
-  divider: {
-    height: 1,
-    marginLeft: 54,
-    backgroundColor: "#F0F2F5"
   },
   heroCard: {
     borderRadius: 24,
@@ -201,6 +193,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12
   },
+  rowSpacing: {
+    marginBottom: 12,
+  },
   rowCopy: {
     flex: 1
   },
@@ -227,11 +222,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   sectionBlock: {
     marginBottom: 2

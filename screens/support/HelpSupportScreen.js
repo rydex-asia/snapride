@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Linking, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const SUPPORT_PHONE = "+919876543210";
 
@@ -92,6 +92,7 @@ export default function HelpSupportScreen({ onBack, onOpenTicketDetails, onOpenC
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   const visibleTopics = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -105,14 +106,21 @@ export default function HelpSupportScreen({ onBack, onOpenTicketDetails, onOpenC
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Help" eyebrow="Support for rides and deliveries" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Help"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(34, insets.bottom + 24) }]}
       >
         <View style={styles.search}>
@@ -147,7 +155,7 @@ export default function HelpSupportScreen({ onBack, onOpenTicketDetails, onOpenC
               style={({ pressed }) => [styles.recentCase, pressed && styles.rowPressed]}
             >
               <View style={styles.caseIcon}>
-                <MaterialCommunityIcons name="receipt-text-outline" size={21} color="#8C5900" />
+                <MaterialCommunityIcons name="receipt-text-outline" size={21} color="#3730A3" />
               </View>
               <View style={styles.caseCopy}>
                 <Text style={styles.caseTitle}>Payment refund</Text>
@@ -193,16 +201,16 @@ export default function HelpSupportScreen({ onBack, onOpenTicketDetails, onOpenC
           </>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   caseCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   caseDetail: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  caseIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#FFF2CC", alignItems: "center", justifyContent: "center" },
+  caseIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#EEF2FF", alignItems: "center", justifyContent: "center" },
   caseTitle: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  contactAction: { flex: 1, minHeight: 116, borderRadius: 18, padding: 14, backgroundColor: "#FFFFFF" },
+  contactAction: { flex: 1, minHeight: 116, borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 18, padding: 14, backgroundColor: "#FFFFFF" },
   contactDetail: { marginTop: 4, color: "#747780", fontSize: 11, lineHeight: 15, fontWeight: "400" },
   contactIcon: { width: 40, height: 40, marginBottom: 12, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
   contactLabel: { color: "#202124", fontSize: 15, lineHeight: 20, fontWeight: "600" },
@@ -220,17 +228,17 @@ const styles = StyleSheet.create({
   faqQuestion: { flex: 1, marginRight: 12, color: "#303238", fontSize: 13, lineHeight: 18, fontWeight: "600" },
   faqQuestionRow: { minHeight: 62, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
   pressed: { opacity: 0.65, transform: [{ scale: 0.99 }] },
-  recentCase: { minHeight: 74, borderRadius: 18, paddingHorizontal: 14, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
+  recentCase: { minHeight: 74, borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 18, paddingHorizontal: 14, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
   rowPressed: { backgroundColor: "#F7F8F9" },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
-  search: { height: 52, paddingHorizontal: 14, borderRadius: 16, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  search: { height: 52, paddingHorizontal: 14, borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 16, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
   searchInput: { flex: 1, marginLeft: 10, paddingVertical: 0, color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "400" },
   sectionTitle: { marginTop: 25, marginBottom: 10, color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
   topicCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   topicDetail: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
   topicIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
-  topicList: { borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
+  topicList: { borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
   topicRow: { minHeight: 74, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
   topicTitle: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
 });

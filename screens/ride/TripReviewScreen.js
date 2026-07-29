@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   skipFooterButton: {
     height: 44,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#F6F8FC",
+    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",

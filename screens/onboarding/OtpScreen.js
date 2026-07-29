@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     color: "#9CA3AF"
   },
   resendToggleWaiting: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E5E7EB"
   },

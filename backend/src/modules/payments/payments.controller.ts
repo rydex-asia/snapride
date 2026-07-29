@@ -32,13 +32,14 @@ export class PaymentsController {
     return this.payments.getStatus(user.sub, paymentId);
   }
 
-  @Post('webhooks/razorpay')
+  @Post('webhooks/cashfree')
   @HttpCode(200)
   webhook(
     @Req() request: RawBodyRequest<Request>,
-    @Headers('x-razorpay-signature') signature = '',
-    @Headers('x-razorpay-event-id') eventId = '',
+    @Headers('x-webhook-signature') signature = '',
+    @Headers('x-webhook-timestamp') timestamp = '',
+    @Headers('x-idempotency-key') eventId = '',
   ) {
-    return this.payments.handleRazorpayWebhook(request.rawBody, signature, eventId, request.body);
+    return this.payments.handleCashfreeWebhook(request.rawBody, signature, timestamp, eventId, request.body);
   }
 }

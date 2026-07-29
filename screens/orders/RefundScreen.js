@@ -15,7 +15,7 @@ export default function RefundScreen({ onBack }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Refund status" subtitle="Track cancelled ride refunds" onBack={onBack} />
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 34 }]}>
         <View style={styles.statusCard}>
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   helpCard: { marginTop: 14, minHeight: 66, borderRadius: 22, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E8EDF5", paddingHorizontal: 14, flexDirection: "row", alignItems: "center", gap: 12 },
   helpText: { flex: 1, color: "#111827", fontSize: 14, fontWeight: "800" },
-  safe: { flex: 1, backgroundColor: "#F6F8FC" },
-  screen: { flex: 1, backgroundColor: "#F6F8FC" },
+  safe: { flex: 1, backgroundColor: "#FFFFFF" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   sectionTitle: { marginBottom: 14, color: "#111827", fontSize: 16, fontWeight: "900" },
   statusAmount: { marginTop: 6, color: "#111827", fontSize: 36, lineHeight: 42, fontWeight: "900" },
   statusCard: { minHeight: 150, borderRadius: 26, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E8EDF5", padding: 18 },

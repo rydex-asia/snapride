@@ -98,7 +98,7 @@ export default function TripSummaryScreen({
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
 
       <RideRouteMap
         showStatusBarScrim
@@ -215,7 +215,7 @@ export default function TripSummaryScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#EAF2FA" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   backButton: { position: "absolute", left: 18, top: 52, zIndex: 8, width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.96)", alignItems: "center", justifyContent: "center", elevation: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0, shadowRadius: 8 },
   sheet: { position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 10, borderTopLeftRadius: 6, borderTopRightRadius: 6, backgroundColor: "#FFFFFF", elevation: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: -3 }, shadowOpacity: 0, shadowRadius: 12 },
   handle: { alignSelf: "center", width: 40, height: 4, marginTop: 11, borderRadius: 99, backgroundColor: "#DDE3EA" },
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   captainCopy: { flex: 1, minWidth: 0, marginLeft: 9, paddingRight: 8 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   captainName: { maxWidth: "68%", color: "#101828", fontSize: 15, lineHeight: 19, fontWeight: "700" },
-  ratingPill: { height: 21, paddingHorizontal: 7, borderRadius: 11, backgroundColor: "#FFF8E8", alignItems: "center", justifyContent: "center" },
+  ratingPill: { height: 21, paddingHorizontal: 7, borderRadius: 11, backgroundColor: "#F5F3FF", alignItems: "center", justifyContent: "center" },
   ratingText: { color: "#5B4A20", fontSize: 11.5, lineHeight: 15, fontWeight: "700" },
   vehicleMeta: { marginTop: 3, color: "#667085", fontSize: 11.5, lineHeight: 15, fontWeight: "500" },
   moreButton: { width: 38, height: 34, borderRadius: 17, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },

@@ -6,7 +6,7 @@ import AccountPageHeader from "../../components/AccountPageHeader";
 export default function PaymentsScreen({ onBack }) {
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.screen}>
         <AccountPageHeader title="Payment settings" subtitle="Manage your cards and wallets" onBack={onBack} />
         <View style={styles.placeholder}>
@@ -35,11 +35,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F1F0F5"
+    backgroundColor: "#FFFFFF"
   },
   title: {
     color: "#111111",

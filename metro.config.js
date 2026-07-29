@@ -15,11 +15,10 @@ config.transformer.getTransformOptions = async () => ({
 });
 
 config.resolver.assetExts.push("lottie");
-// The repository also contains large native and backend workspaces. Metro's
-// crawler applies the block list while walking, whereas Watchman returns the
-// complete workspace inventory before filtering and can exhaust memory after
-// a cache reset.
-config.useWatchman = false;
+// Use Watchman so Metro honours the repository's `.watchmanconfig` exclusions
+// before building its file map. The Node crawler can retain the large native
+// and backend trees during a cold cache rebuild and exhaust the JS heap.
+config.useWatchman = true;
 config.resolver.blockList = [
   ...(config.resolver.blockList || []),
   /[\\/]backend(?:[\\/]|$)/,
@@ -29,7 +28,18 @@ config.resolver.blockList = [
   /[\\/]node_modules[\\/]@shopify[\\/]react-native-skia[\\/](?:apple|cpp|libs)(?:[\\/]|$)/,
 ];
 
-module.exports = withSentryConfig(config, {
-  annotateReactComponents: false,
-  includeWebReplay: false,
-});
+const hasSentryBuildCredentials = Boolean(
+  process.env.SENTRY_AUTH_TOKEN
+  && process.env.SENTRY_ORG
+  && process.env.SENTRY_PROJECT
+);
+
+// Sentry's serializer is only needed for production source-map uploads. Using
+// it without build credentials in Expo Go can fail local bundles with a
+// missing Debug ID, so development keeps Expo's default Metro serializer.
+module.exports = hasSentryBuildCredentials
+  ? withSentryConfig(config, {
+      annotateReactComponents: false,
+      includeWebReplay: false,
+    })
+  : config;

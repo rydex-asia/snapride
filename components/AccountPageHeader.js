@@ -1,7 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import AppIcon from "./AppIcon";
-import { SHADOWS } from "../theme/shadows";
 
 export default function AccountPageHeader({ title, subtitle, onBack }) {
   return (
@@ -29,9 +28,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 8,
     backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(15,23,42,0.06)",
-    ...SHADOWS.floating,
     zIndex: 10,
   },
   backButton: {

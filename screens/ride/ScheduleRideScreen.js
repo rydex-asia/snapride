@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     top: ITEM_HEIGHT * 2,
     height: ITEM_HEIGHT,
     borderRadius: 13,
-    backgroundColor: "#F1F0F5",
+    backgroundColor: "#FFFFFF",
   },
   summaryCard: {
     marginHorizontal: 22,

@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   swapBtn: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6"
+    backgroundColor: "#FFFFFF"
   },
   title: {
     fontSize: 16,

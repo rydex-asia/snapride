@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
   screen: { flex: 1, backgroundColor: "#F6F7F8" },
   searchHeader: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 10, backgroundColor: "#FFFFFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E4E7EC" },
-  searchBar: { height: 52, borderRadius: 14, borderWidth: 1, borderColor: "#D7DBE0", backgroundColor: "#F9FAFB", flexDirection: "row", alignItems: "center" },
+  searchBar: { height: 52, borderRadius: 14, borderWidth: 1, borderColor: "#D7DBE0", backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
   backButton: { width: 44, height: 50, alignItems: "center", justifyContent: "center" },
   searchInput: { flex: 1, height: 50, paddingHorizontal: 0, color: "#101828", fontSize: 15, lineHeight: 20, fontFamily: "PlusJakartaSans_600SemiBold" },
   headerIconButton: { width: 43, height: 50, alignItems: "center", justifyContent: "center" },

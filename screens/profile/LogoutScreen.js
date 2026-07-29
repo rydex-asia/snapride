@@ -8,7 +8,7 @@ import AccountPageHeader from "../../components/AccountPageHeader";
 export default function LogoutScreen({ onBack, onConfirm }) {
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Logout" subtitle="Confirm sign out from this device" onBack={onBack} />
 
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -127,11 +127,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   secondaryButton: {
     flex: 1,

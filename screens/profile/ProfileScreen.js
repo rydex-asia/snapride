@@ -1,6 +1,6 @@
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import Svg, { Circle, Line, Path, Rect } from "react-native-svg";
 
@@ -110,6 +110,13 @@ function PremiumAccountIcon({ name, size = 22, color = "#30343A" }) {
         );
       case "chevron-right":
         return <Path {...common} d="m9.3 5.5 6.5 6.5-6.5 6.5" />;
+      case "person":
+        return (
+          <>
+            <Circle cx="12" cy="8.2" r="3.2" fill={color} opacity={0.68} />
+            <Path d="M5.2 19.3c.6-3.1 3.1-5.1 6.8-5.1s6.2 2 6.8 5.1" fill={color} opacity={0.68} stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+          </>
+        );
       default:
         return <Circle {...common} cx="12" cy="12" r="7.5" />;
     }
@@ -124,7 +131,7 @@ function PremiumAccountIcon({ name, size = 22, color = "#30343A" }) {
 
 function AccountRow({ item, isLast, onPress }) {
   return (
-    <View>
+    <View style={!isLast && styles.accountRowSpacing}>
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
@@ -139,7 +146,6 @@ function AccountRow({ item, isLast, onPress }) {
         </View>
         <PremiumAccountIcon name="chevron-right" size={19} color="#92959B" />
       </Pressable>
-      {!isLast ? <View style={styles.divider} /> : null}
     </View>
   );
 }
@@ -159,10 +165,59 @@ export default function ProfileScreen({
   onOpenTransactions,
   onOpenReceipts,
   onLogout,
+  scrollY,
 }) {
   const insets = useSafeAreaInsets();
   const name = profile?.name || "Your account";
   const phone = profile?.phone || "+91 98765 43210";
+  const headerEntrance = useRef(new Animated.Value(0)).current;
+  const profileEntrance = useRef(new Animated.Value(0)).current;
+  const activityEntrance = useRef(new Animated.Value(0)).current;
+  const menuEntrance = useRef(new Animated.Value(0)).current;
+  const [headerElevated, setHeaderElevated] = useState(false);
+
+  useEffect(() => {
+    const animation = Animated.stagger(65, [
+      Animated.timing(headerEntrance, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(profileEntrance, {
+        toValue: 1,
+        duration: 360,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(activityEntrance, {
+        toValue: 1,
+        duration: 360,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuEntrance, {
+        toValue: 1,
+        duration: 390,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]);
+    animation.start();
+    return () => animation.stop();
+  }, [activityEntrance, headerEntrance, menuEntrance, profileEntrance]);
+
+  const enterStyle = (value, distance = 12) => ({
+    opacity: value,
+    transform: [
+      {
+        translateY: value.interpolate({
+          inputRange: [0, 1],
+          outputRange: [distance, 0],
+        }),
+      },
+    ],
+  });
 
   const handlePress = (key) => {
     if (key === "wallet") return onOpenWallet?.();
@@ -179,71 +234,75 @@ export default function ProfileScreen({
   const openActivity = () => (onOpenBookings || onOpenRides)?.();
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
+    <View style={styles.safe}>
       <StatusBar style="dark" backgroundColor="#FFFFFF" />
 
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Account</Text>
-          <Text style={styles.headerSubtitle}>Your rides, payments and preferences</Text>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open settings"
-          onPress={onOpenSettings}
-          hitSlop={9}
-          style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
+      <Animated.View style={[styles.topChrome, { height: insets.top + 68 }, headerElevated && styles.topChromeElevated]}>
+        <Animated.View
+          pointerEvents={headerElevated ? "auto" : "none"}
+          style={[styles.header, { top: insets.top, opacity: headerElevated ? 1 : 0 }]}
         >
-          <PremiumAccountIcon name="cog-outline" size={23} color="#30343A" />
-        </Pressable>
-      </View>
+          <Text style={styles.headerTitle}>Account</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+            onPress={onOpenSettings}
+            hitSlop={9}
+            style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
+          >
+            <PremiumAccountIcon name="cog-outline" size={22} color="#30343A" />
+          </Pressable>
+        </Animated.View>
+      </Animated.View>
 
-      <ScrollView
+      <View style={{ height: insets.top }} />
+
+      <Animated.ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
+        onScroll={(event) => {
+          const offset = event.nativeEvent.contentOffset.y;
+          setHeaderElevated(offset > 4);
+          scrollY?.setValue(offset);
+        }}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(140, insets.bottom + 124) }]}
       >
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenEditProfile}
-          style={({ pressed }) => [styles.profileSection, pressed && styles.rowPressed]}
-        >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{String(name).trim().charAt(0).toUpperCase() || "R"}</Text>
-          </View>
-          <View style={styles.profileCopy}>
-            <Text style={styles.profileName} numberOfLines={1}>{name}</Text>
-            <Text style={styles.profilePhone}>{phone}</Text>
-          </View>
-          <View style={styles.editAction}>
-            <Text style={styles.editText}>Edit</Text>
-          </View>
-        </Pressable>
-
-        <View style={styles.sectionHeading}>
-          <Text style={styles.sectionTitle}>Your activity</Text>
-          <Pressable onPress={openActivity} hitSlop={8}>
-            <Text style={styles.viewAll}>View all</Text>
+        <Animated.View style={enterStyle(profileEntrance)}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onOpenEditProfile}
+            style={({ pressed }) => [styles.profileSection, pressed && styles.profilePressed]}
+          >
+            <View style={styles.avatar}>
+              <PremiumAccountIcon name="person" size={60} color="#A5A7AC" />
+            </View>
+            <View style={styles.profileCopy}>
+              <Text style={styles.profileName} numberOfLines={1}>{name}</Text>
+              <View style={styles.ratingPill}>
+                <Text style={styles.ratingStar}>★</Text>
+                <Text style={styles.ratingText}>5.0</Text>
+              </View>
+              <Text style={styles.profilePhone}>{phone}</Text>
+            </View>
           </Pressable>
-        </View>
+        </Animated.View>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={openActivity}
-          style={({ pressed }) => [styles.activitySection, pressed && styles.rowPressed]}
-        >
-          <View style={styles.activityIcon}>
-            <PremiumAccountIcon name="car-clock" size={25} color="#8C5900" />
-          </View>
-          <View style={styles.activityCopy}>
-            <Text style={styles.activityTitle}>My rides and deliveries</Text>
-            <Text style={styles.activityDetail}>Track active trips or revisit your history</Text>
-          </View>
-          <PremiumAccountIcon name="chevron-right" size={19} color="#92959B" />
-        </Pressable>
-
-        <Text style={styles.sectionTitleStandalone}>Account</Text>
-        <View style={styles.accountGroup}>
+        <Animated.View style={[styles.flatList, enterStyle(activityEntrance)]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={openActivity}
+            style={({ pressed }) => [styles.accountRow, pressed && styles.rowPressed]}
+          >
+            <View style={styles.accountIcon}>
+              <PremiumAccountIcon name="car-clock" size={25} color="#3730A3" />
+            </View>
+            <View style={styles.accountCopy}>
+              <Text style={styles.accountLabel}>My rides and deliveries</Text>
+              <Text style={styles.accountDetail}>Active trips, past rides and parcel history</Text>
+            </View>
+            <PremiumAccountIcon name="chevron-right" size={19} color="#92959B" />
+          </Pressable>
           {[...PRIMARY_ACTIONS, ...ACCOUNT_ITEMS].map((item, index, items) => (
             <AccountRow
               key={item.key}
@@ -252,57 +311,66 @@ export default function ProfileScreen({
               onPress={() => handlePress(item.key)}
             />
           ))}
-        </View>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={onLogout}
-          style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-        >
-          <PremiumAccountIcon name="logout" size={21} color="#B42318" />
-          <Text style={styles.logoutText}>Log out</Text>
-        </Pressable>
-        <Text style={styles.version}>Rydex customer app · 0.1.0</Text>
-      </ScrollView>
-    </SafeAreaView>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onLogout}
+            style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
+          >
+            <PremiumAccountIcon name="logout" size={21} color="#B42318" />
+            <Text style={styles.logoutText}>Log out</Text>
+          </Pressable>
+          <Text style={styles.version}>Rydex customer app · 0.1.0</Text>
+        </Animated.View>
+      </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   accountCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
-  accountDetail: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  accountGroup: { borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
-  accountIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F5F6F8", alignItems: "center", justifyContent: "center" },
+  accountDetail: { marginTop: 3, color: "#6E737C", fontSize: 12, lineHeight: 16, fontWeight: "400" },
+  accountGroup: { backgroundColor: "transparent" },
+  accountIcon: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   accountLabel: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  accountRow: { minHeight: 74, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
+  accountRow: { minHeight: 72, paddingHorizontal: 0, flexDirection: "row", alignItems: "center", backgroundColor: "transparent" },
+  accountRowSpacing: { marginBottom: 0 },
   activityCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   activityDetail: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  activityIcon: { width: 46, height: 46, borderRadius: 15, backgroundColor: "#FFF2CC", alignItems: "center", justifyContent: "center" },
-  activitySection: { minHeight: 82, borderRadius: 18, paddingHorizontal: 14, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
+  activityIcon: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },
+  activitySection: { minHeight: 82, paddingHorizontal: 0, backgroundColor: "transparent", flexDirection: "row", alignItems: "center" },
   activityTitle: { color: "#202124", fontSize: 15, lineHeight: 20, fontWeight: "600" },
-  avatar: { width: 56, height: 56, borderRadius: 18, backgroundColor: "#FFF2CC", alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#8C5900", fontSize: 22, lineHeight: 27, fontWeight: "700" },
-  content: { paddingHorizontal: 16, paddingTop: 8 },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 70, backgroundColor: "#E2E4E7" },
-  editAction: { minWidth: 50, height: 34, borderRadius: 12, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
+  avatar: { width: 64, height: 64, borderRadius: 47, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
+  avatarText: { color: "#A5A7AC", fontSize: 24, lineHeight: 44, fontWeight: "400" },
+  content: { paddingHorizontal: 16, paddingTop: 4 },
+  editAction: { minWidth: 52, height: 34, borderRadius: 12, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
   editText: { color: "#303238", fontSize: 12, lineHeight: 16, fontWeight: "700" },
-  header: { minHeight: 72, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  header: { position: "absolute", left: 0, right: 0, minHeight: 68, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", justifyContent: "space-between", zIndex: 40 },
   headerSubtitle: { marginTop: 2, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  headerTitle: { color: "#202124", fontSize: 23, lineHeight: 28, fontWeight: "700" },
-  logout: { marginTop: 22, height: 54, borderRadius: 16, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  headerTitle: { color: "#202124", fontSize: 21, lineHeight: 26, fontWeight: "700" },
+  logout: { marginTop: 18, height: 52, borderRadius: 17, backgroundColor: "#fdfdfdff", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 0 },
   logoutText: { color: "#B42318", fontSize: 14, lineHeight: 19, fontWeight: "700" },
   pressed: { opacity: 0.65, transform: [{ scale: 0.99 }] },
   profileCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
-  profileName: { color: "#202124", fontSize: 18, lineHeight: 23, fontWeight: "700" },
-  profilePhone: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  profileSection: { minHeight: 88, paddingHorizontal: 14, borderRadius: 19, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
-  rowPressed: { backgroundColor: "#F7F8F9" },
+  profileName: { color: "#0B0C0E", fontSize: 24, lineHeight: 40, fontWeight: "800", letterSpacing: -0.5 },
+  profilePhone: { marginTop: 8, color: "#747780", fontSize: 13, lineHeight: 18, fontWeight: "400" },
+  profileSection: { minHeight: 154, paddingHorizontal: 0, paddingVertical: 18, backgroundColor: "transparent", flexDirection: "row", alignItems: "center" },
+  profilePressed: { opacity: 0.88, transform: [{ scale: 0.995 }] },
+  rowPressed: { opacity: 0.72 },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#ffffffff" },
-  sectionHeading: { marginTop: 25, marginBottom: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  flatList: { marginTop: 20 },
+  ratingPill: { alignSelf: "flex-start", marginTop: 10, paddingHorizontal: 8, height: 28, borderRadius: 8, backgroundColor: "#F0F1F3", flexDirection: "row", alignItems: "center", gap: 5 },
+  ratingStar: { color: "#111318", fontSize: 17, lineHeight: 20 },
+  ratingText: { color: "#202124", fontSize: 14, lineHeight: 18, fontWeight: "500" },
+  sectionHeading: { marginTop: 24, marginBottom: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   sectionTitle: { color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
-  sectionTitleStandalone: { marginTop: 25, marginBottom: 10, color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
+  sectionTitleStandalone: { marginTop: 24, marginBottom: 10, color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
   settingsButton: { width: 40, height: 40, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
+  topChrome: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 30, backgroundColor: "transparent" },
+  topChromeElevated: { backgroundColor: "#FFFFFF", borderBottomWidth: 0, borderBottomColor: "transparent", shadowColor: "#363232ff", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0, shadowRadius: 0, elevation: 10 },
   version: { marginTop: 14, color: "#9A9DA3", fontSize: 10, lineHeight: 14, textAlign: "center" },
-  viewAll: { color: "#8C5900", fontSize: 13, lineHeight: 17, fontWeight: "700" },
+  verifiedPill: { alignSelf: "flex-start", marginTop: 7, paddingHorizontal: 9, height: 23, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.82)", alignItems: "center", justifyContent: "center" },
+  verifiedText: { color: "#7A5200", fontSize: 10.5, lineHeight: 14, fontWeight: "600" },
+  viewAll: { color: "#3730A3", fontSize: 13, lineHeight: 17, fontWeight: "700" },
 });

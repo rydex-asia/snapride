@@ -428,7 +428,7 @@ export default function PickupDropScreen({
                 <MaterialCommunityIcons
                   name="plus"
                   size={17}
-                  color={showStopInput ? "#7C4C00" : "#42464D"}
+                  color={showStopInput ? "#312E81" : "#42464D"}
                 />
               </View>
               <Text style={[styles.optionText, showStopInput && styles.optionTextActive]}>Add stop</Text>
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   plannerActionActive: {
-    backgroundColor: "#FFF4D6",
+    backgroundColor: "#EEF2FF",
   },
   plannerActionIcon: {
     width: 25,
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.05
   },
   optionTextActive: {
-    color: "#7C4C00"
+    color: "#312E81"
   },
   routeProgressTrack: {
     height: 1,

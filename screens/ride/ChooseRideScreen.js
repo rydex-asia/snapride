@@ -1097,7 +1097,7 @@ export default function ChooseRideScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
       <View
         style={[styles.map, { height: screenHeight }]}
         onLayout={({ nativeEvent }) => setMapSize(nativeEvent.layout)}
@@ -1930,7 +1930,7 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 12,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center"
   },

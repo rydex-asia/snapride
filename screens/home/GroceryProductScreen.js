@@ -1914,7 +1914,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: "#F6F7FA",
+    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

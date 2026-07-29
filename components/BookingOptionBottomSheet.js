@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const GREEN = "#F5A800";
+const PRIMARY = "#4F46E5";
 const LAST_PAYMENT_METHOD_KEY = "@rydex/last-payment-method";
 
 const PAYMENT_OPTIONS = [
@@ -232,7 +232,7 @@ export default function BookingOptionBottomSheet({
                             <React.Fragment key={item.key}>
                               <Pressable style={({ pressed }) => [styles.optionRow, pressed && styles.pressed]} onPress={() => selectPaymentAndClose(item)}>
                                 <View style={[styles.iconBox, selected && styles.iconBoxSelected]}>
-                                  <MaterialCommunityIcons name={item.icon} size={23} color={selected ? GREEN : "#3E4651"} />
+                                  <MaterialCommunityIcons name={item.icon} size={23} color={selected ? PRIMARY : "#3E4651"} />
                                 </View>
                                 <View style={styles.optionCopy}>
                                   <Text style={styles.optionTitle}>{item.title}</Text>
@@ -342,12 +342,12 @@ const styles = StyleSheet.create({
   optionTitle: { color: "#15191F", fontSize: 15, lineHeight: 20, fontWeight: "700" },
   optionSubtitle: { marginTop: 2, color: "#737B87", fontSize: 12.5, lineHeight: 17, fontWeight: "500" },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: "#BCC2CB", alignItems: "center", justifyContent: "center" },
-  radioSelected: { borderColor: GREEN },
-  radioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: GREEN },
+  radioSelected: { borderColor: PRIMARY },
+  radioDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: PRIMARY },
   softDivider: { height: 0, marginLeft: 68, marginRight: 14, borderTopWidth: 1, borderStyle: "dashed", borderTopColor: "#DCE3EC" },
   codeCard: { height: 54, paddingHorizontal: 14, borderRadius: 16, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
   codeInput: { flex: 1, color: "#15191F", fontSize: 15, lineHeight: 20, fontWeight: "600" },
-  codeApply: { marginLeft: 12, color: GREEN, fontSize: 14, lineHeight: 18, fontWeight: "800" },
+  codeApply: { marginLeft: 12, color: PRIMARY, fontSize: 14, lineHeight: 18, fontWeight: "800" },
   codeApplyDisabled: { color: "#B3B7BE" },
   sectionLabel: { marginTop: 18, marginBottom: 10, marginLeft: 3, color: "#20242B", fontSize: 16, lineHeight: 21, fontWeight: "800" },
   couponList: { gap: 10 },
@@ -355,18 +355,18 @@ const styles = StyleSheet.create({
   couponCardSelected: { backgroundColor: "#F0FAF3" },
   couponTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   applyButton: { minWidth: 65, height: 31, paddingHorizontal: 10, borderRadius: 10, backgroundColor: "#EAF2EC", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4 },
-  applyButtonActive: { backgroundColor: GREEN },
-  applyButtonText: { color: GREEN, fontSize: 11.5, lineHeight: 15, fontWeight: "800" },
+  applyButtonActive: { backgroundColor: PRIMARY },
+  applyButtonText: { color: PRIMARY, fontSize: 11.5, lineHeight: 15, fontWeight: "800" },
   applyButtonTextActive: { color: "#FFFFFF" },
   codePill: { paddingHorizontal: 10, height: 28, borderRadius: 8, backgroundColor: "#EEF1F4", alignItems: "center", justifyContent: "center" },
   codeText: { color: "#1B2129", fontSize: 12, lineHeight: 16, fontWeight: "900", letterSpacing: 0.4 },
   couponTitle: { marginTop: 10, color: "#161A20", fontSize: 15, lineHeight: 20, fontWeight: "700" },
   couponDivider: { height: 0, marginTop: 10, borderTopWidth: 1, borderStyle: "dashed", borderTopColor: "#DCE3EC" },
   couponMetaRow: { marginTop: 5, flexDirection: "row", alignItems: "center", gap: 8 },
-  couponSaving: { color: GREEN, fontSize: 13, lineHeight: 18, fontWeight: "800" },
+  couponSaving: { color: PRIMARY, fontSize: 13, lineHeight: 18, fontWeight: "800" },
   couponTerms: { flex: 1, color: "#7A818C", fontSize: 12, lineHeight: 16, fontWeight: "500" },
   footer: { paddingHorizontal: 18, paddingTop: 12, paddingBottom: 8, backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#ECEFF2" },
-  confirmButton: { minHeight: 52, paddingHorizontal: 18, borderRadius: 14, backgroundColor: GREEN, alignItems: "center", justifyContent: "center" },
+  confirmButton: { minHeight: 52, paddingHorizontal: 18, borderRadius: 14, backgroundColor: PRIMARY, alignItems: "center", justifyContent: "center" },
   confirmPressed: { opacity: 0.86, transform: [{ scale: 0.99 }] },
   confirmText: { color: "#FFFFFF", fontSize: 15, lineHeight: 20, fontWeight: "800", textAlign: "center" },
   pressed: { opacity: 0.72 },

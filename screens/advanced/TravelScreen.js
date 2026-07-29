@@ -100,7 +100,7 @@ function BookingCard({ item, onPress }) {
       <View style={styles.bookingImageWrap}>
         <Image source={item.image} resizeMode="cover" style={styles.bookingImage} />
         <View style={styles.bookingIcon}>
-          <MaterialCommunityIcons name={item.icon} size={18} color="#7C4C00" />
+          <MaterialCommunityIcons name={item.icon} size={18} color="#312E81" />
         </View>
       </View>
       <View style={styles.bookingCopy}>
@@ -121,7 +121,7 @@ function ToolRow({ item, last, onPress }) {
         style={({ pressed }) => [styles.toolRow, pressed && styles.rowPressed]}
       >
         <View style={styles.toolIcon}>
-          <MaterialCommunityIcons name={item.icon} size={21} color="#7C4C00" />
+          <MaterialCommunityIcons name={item.icon} size={21} color="#312E81" />
         </View>
         <View style={styles.toolCopy}>
           <Text style={styles.toolTitle}>{item.title}</Text>
@@ -242,7 +242,7 @@ export default function TravelScreen({ onBack, onSelectService, scrollY: externa
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 16, paddingBottom: 118, backgroundColor: "#F1F0F5" },
+  content: { padding: 16, paddingBottom: 118, backgroundColor: "#FFFFFF" },
   pressed: { opacity: 0.8, transform: [{ scale: 0.99 }] },
   rowPressed: { backgroundColor: "#F8F8F8" },
   hero: {
@@ -290,14 +290,14 @@ const styles = StyleSheet.create({
     width: 31,
     height: 31,
     borderRadius: 10,
-    backgroundColor: "#FFF2CC",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center",
   },
   bookingCopy: { paddingHorizontal: 11, paddingTop: 9, paddingBottom: 11 },
   bookingTitle: { color: "#202124", fontSize: 15, lineHeight: 19, fontWeight: "700" },
   bookingSubtitle: { marginTop: 2, color: "#74777D", fontSize: 10, lineHeight: 13, fontWeight: "400" },
-  bookingOffer: { marginTop: 5, color: "#A96700", fontSize: 10, lineHeight: 13, fontWeight: "700" },
+  bookingOffer: { marginTop: 5, color: "#3730A3", fontSize: 10, lineHeight: 13, fontWeight: "700" },
   toolGroup: { overflow: "hidden", borderRadius: 19, backgroundColor: "#FFFFFF" },
   toolRow: {
     minHeight: 72,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     width: 43,
     height: 43,
     borderRadius: 14,
-    backgroundColor: "#FFF2CC",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center",
   },

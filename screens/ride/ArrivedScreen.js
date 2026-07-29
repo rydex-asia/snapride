@@ -192,7 +192,7 @@ export default function ArrivedScreen({
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
       <View style={styles.screen}>
         <MapView
           ref={mapRef}

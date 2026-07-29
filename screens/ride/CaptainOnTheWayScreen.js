@@ -308,7 +308,7 @@ export default function CaptainOnTheWayScreen({
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
 
       <RideRouteMap
         showStatusBarScrim
@@ -472,7 +472,7 @@ export default function CaptainOnTheWayScreen({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#EAF2FA" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   mapActions: {
     position: "absolute",
     left: 18,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   captainCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   captainName: { maxWidth: "70%", color: "#101828", fontSize: 17, lineHeight: 22, fontWeight: "700" },
-  ratingPill: { height: 22, paddingHorizontal: 7, borderRadius: 99, backgroundColor: "#FFF8E8", alignItems: "center", justifyContent: "center" },
+  ratingPill: { height: 22, paddingHorizontal: 7, borderRadius: 99, backgroundColor: "#F5F3FF", alignItems: "center", justifyContent: "center" },
   ratingText: { color: "#5B4A20", fontSize: 12, lineHeight: 15, fontWeight: "700" },
   vehicleText: { marginTop: 4, color: "#344054", fontSize: 13, lineHeight: 18, fontWeight: "600" },
   actionRow: { flexDirection: "row", gap: 8, marginTop: 8 },

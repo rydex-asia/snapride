@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const PAST_RIDES = [
   { key: "auto", month: "May 2026", type: "Auto", date: "17 May · 7:42 PM", from: "Road no 1, Krishna Nagar", to: "Ram Nagar", amount: "₹170" },
@@ -51,6 +51,7 @@ function RideRow({ ride, isLast, onPress }) {
 export default function MyRidesScreen({ onBack, onTrackRide = () => {}, onOpenRideDetails = () => {} }) {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState("ongoing");
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   const historyGroups = useMemo(() => {
     return PAST_RIDES.reduce((groups, ride) => {
@@ -62,9 +63,14 @@ export default function MyRidesScreen({ onBack, onTrackRide = () => {}, onOpenRi
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="My rides" eyebrow="Trips and ride history" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="My rides"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <View style={styles.tabs}>
         {TABS.map((tab) => {
@@ -81,6 +87,8 @@ export default function MyRidesScreen({ onBack, onTrackRide = () => {}, onOpenRi
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
+        onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(32, insets.bottom + 24) }]}
       >
         {activeTab === "ongoing" ? (
@@ -149,7 +157,7 @@ export default function MyRidesScreen({ onBack, onTrackRide = () => {}, onOpenRi
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -160,12 +168,12 @@ const styles = StyleSheet.create({
   dropDot: { width: 9, height: 9, borderRadius: 3, backgroundColor: "#202124" },
   historyGroup: { marginBottom: 22 },
   historyList: { marginTop: 10, borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#A96700" },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#3730A3" },
   liveEta: { color: "#202124", fontSize: 22, lineHeight: 27, fontWeight: "700" },
   liveHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   liveNote: { marginTop: 12, paddingHorizontal: 4, flexDirection: "row", alignItems: "flex-start" },
   liveNoteText: { flex: 1, marginLeft: 8, color: "#747780", fontSize: 11, lineHeight: 16, fontWeight: "400" },
-  liveRide: { borderRadius: 20, padding: 16, backgroundColor: "#FFFFFF" },
+  liveRide: { borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 20, padding: 16, backgroundColor: "#FFFFFF" },
   liveState: { flexDirection: "row", alignItems: "center", gap: 7 },
   liveStateText: { color: "#656970", fontSize: 12, lineHeight: 16, fontWeight: "600" },
   liveVehicle: { marginTop: 12, color: "#202124", fontSize: 19, lineHeight: 24, fontWeight: "700" },
@@ -189,14 +197,14 @@ const styles = StyleSheet.create({
   routeRail: { width: 14, height: 76, alignItems: "center" },
   rowPressed: { backgroundColor: "#F7F8F9" },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   sectionTitle: { color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
   tab: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "flex-end" },
   tabIndicator: { width: 30, height: 3, marginTop: 10, borderRadius: 2, backgroundColor: "transparent" },
   tabIndicatorActive: { backgroundColor: "#202124" },
   tabLabel: { color: "#85888E", fontSize: 13, lineHeight: 17, fontWeight: "600" },
   tabLabelActive: { color: "#202124" },
-  tabs: { minHeight: 52, paddingHorizontal: 16, backgroundColor: "#FFFFFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E2E4E7", flexDirection: "row" },
+  tabs: { minHeight: 52, paddingHorizontal: 16, backgroundColor: "#FFFFFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#DEE3E8", flexDirection: "row" },
   trackButton: { marginTop: 20, height: 48, borderRadius: 14, backgroundColor: "#202124", alignItems: "center", justifyContent: "center" },
   trackButtonText: { color: "#FFFFFF", fontSize: 14, lineHeight: 19, fontWeight: "700" },
 });

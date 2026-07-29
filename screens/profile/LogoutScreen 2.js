@@ -6,7 +6,7 @@ import AccountPageHeader from "../../components/AccountPageHeader";
 export default function LogoutScreen({ onBack }) {
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.screen}>
         <AccountPageHeader title="Logout" subtitle="Confirm sign out" onBack={onBack} />
         <View style={styles.placeholder}>
@@ -35,11 +35,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   title: {
     color: "#111111",

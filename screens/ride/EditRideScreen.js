@@ -98,7 +98,7 @@ export default function EditRideScreen({ onBack, onUpdateRide }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
       <View style={styles.root}>
         <View style={styles.header}>
           <Pressable onPress={onBack} hitSlop={10} style={styles.backButton}>

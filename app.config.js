@@ -1,6 +1,9 @@
 const base = require("./app.json").expo;
 const androidMapsKey = process.env.GOOGLE_MAPS_ANDROID_SDK_KEY || "";
 const iosMapsKey = process.env.GOOGLE_MAPS_IOS_SDK_KEY || "";
+const enableSentryBuildPlugin =
+  process.env.EAS_BUILD === "true"
+  || process.env.ENABLE_SENTRY_EXPO_PLUGIN === "1";
 
 module.exports = ({ config }) => ({
   ...config,
@@ -17,7 +20,7 @@ module.exports = ({ config }) => ({
       const name = Array.isArray(plugin) ? plugin[0] : plugin;
       return name !== "expo-location" && name !== "@sentry/react-native";
     }),
-    "@sentry/react-native",
+    ...(enableSentryBuildPlugin ? ["@sentry/react-native"] : []),
     [
       "expo-location",
       {
@@ -42,6 +45,15 @@ module.exports = ({ config }) => ({
     },
     infoPlist: {
       ...(base.ios?.infoPlist || {}),
+      LSApplicationQueriesSchemes: [
+        "amazonpay",
+        "upi",
+        "credpay",
+        "bhim",
+        "paytmmp",
+        "phonepe",
+        "tez",
+      ],
       NSLocationWhenInUseUsageDescription:
         "Rydex uses your location while the app is open to find pickup points and track active trips.",
     },

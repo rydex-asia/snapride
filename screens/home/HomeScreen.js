@@ -51,7 +51,7 @@ import {
   validateGroceryCart,
   verifyPayment,
 } from "../../platformApi";
-import { openRazorpayCheckout } from "../../payments/razorpayCheckout";
+import { openCashfreeCheckout } from "../../payments/cashfreeCheckout";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -301,7 +301,10 @@ const GROCERY_CATEGORIES = [
 ];
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
+// Keep the panel anchored while exposing a useful map/ad band. The map itself
+// remains full-screen underneath; only the draggable panel travel is bounded.
 const HOME_PANEL_REVEAL = 360;
+const HOME_PANEL_OPEN_THRESHOLD = 110;
 const TAB_BAR_HORIZONTAL = 18;
 const TAB_WIDTH = (SCREEN_WIDTH - TAB_BAR_HORIZONTAL * 2) / Object.keys(MODE_CONFIG).length;
 const PROMO_CARD_GAP = 10;
@@ -497,7 +500,7 @@ function DeliveryHeaderCopy({
       <View style={styles.deliveryHeaderTitleRow}>
         {accentEta ? (
           <View style={styles.deliveryHeaderLocationBadge}>
-            <AppIcon name="map-marker" size={14} color="#A96700" />
+            <AppIcon name="map-marker" size={14} color="#3730A3" />
           </View>
         ) : null}
         {etaParts ? (
@@ -579,6 +582,7 @@ export default function HomeScreen({
   const [homeOpeningPromoVisible, setHomeOpeningPromoVisible] = useState(true);
   const [rideHeaderCollapsed, setRideHeaderCollapsed] = useState(false);
   const [homePanelDragging, setHomePanelDragging] = useState(false);
+  const [homeSurfaceResetKey, setHomeSurfaceResetKey] = useState(0);
   const internalScrollY = useRef(new Animated.Value(0)).current;
   const scrollY = navigationScrollY || internalScrollY;
   const homeScrollRef = useRef(null);
@@ -625,7 +629,7 @@ export default function HomeScreen({
         },
         onPanResponderRelease: (_, gesture) => {
           const projected = homePanelDragStartRef.current + gesture.dy + gesture.vy * 42;
-          const destination = projected > HOME_PANEL_REVEAL * 0.38 ? HOME_PANEL_REVEAL : 0;
+          const destination = projected > HOME_PANEL_OPEN_THRESHOLD ? HOME_PANEL_REVEAL : 0;
           Animated.spring(homePanelDragY, {
             toValue: destination,
             stiffness: 168,
@@ -634,9 +638,14 @@ export default function HomeScreen({
             overshootClamping: true,
             restDisplacementThreshold: 0.4,
             restSpeedThreshold: 0.4,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }).start(({ finished }) => {
-            if (finished && destination === 0) setHomePanelDragging(false);
+            if (finished && destination === 0) {
+              homePanelDragY.setValue(0);
+              homePanelDragStartRef.current = 0;
+              setHomePanelDragging(false);
+              setHomeSurfaceResetKey((current) => current + 1);
+            }
           });
         },
         onPanResponderTerminate: () => {
@@ -646,9 +655,14 @@ export default function HomeScreen({
             damping: 24,
             mass: 0.92,
             overshootClamping: true,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }).start(({ finished }) => {
-            if (finished) setHomePanelDragging(false);
+            if (finished) {
+              homePanelDragY.setValue(0);
+              homePanelDragStartRef.current = 0;
+              setHomePanelDragging(false);
+              setHomeSurfaceResetKey((current) => current + 1);
+            }
           });
         },
       }),
@@ -877,13 +891,13 @@ export default function HomeScreen({
         damping: 18,
         stiffness: 170,
         mass: 0.9,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
       Animated.delay(1700),
       Animated.timing(screenRevealY, {
         toValue: 0,
         duration: 360,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
     ]).start(({ finished }) => {
       if (finished) {
@@ -902,37 +916,46 @@ export default function HomeScreen({
     if (isGroceryMode || homePanelHintPlayedRef.current) return undefined;
 
     homePanelHintPlayedRef.current = true;
+    homePanelDragY.stopAnimation();
+    homePanelDragY.setValue(0);
+    homePanelDragStartRef.current = 0;
     setHomePanelDragging(true);
+
     const hintAnimation = Animated.sequence([
-      Animated.delay(300),
+      Animated.delay(260),
       Animated.timing(homePanelDragY, {
         toValue: HOME_PANEL_REVEAL,
-        duration: 650,
+        duration: 620,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
-      Animated.delay(3500),
+      Animated.delay(3300),
       Animated.spring(homePanelDragY, {
         toValue: 0,
-        stiffness: 150,
-        damping: 23,
-        mass: 0.94,
+        stiffness: 155,
+        damping: 24,
+        mass: 0.92,
         overshootClamping: true,
         restDisplacementThreshold: 0.4,
         restSpeedThreshold: 0.4,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
     ]);
     homePanelHintAnimationRef.current = hintAnimation;
 
-    hintAnimation.start(({ finished }) => {
+    hintAnimation.start(() => {
       homePanelHintAnimationRef.current = null;
-      if (finished) setHomePanelDragging(false);
+      homePanelDragY.setValue(0);
+      homePanelDragStartRef.current = 0;
+      setHomePanelDragging(false);
+      setHomeSurfaceResetKey((current) => current + 1);
     });
 
     return () => {
       hintAnimation.stop();
       homePanelHintAnimationRef.current = null;
+      homePanelDragY.setValue(0);
+      homePanelDragStartRef.current = 0;
     };
   }, [homePanelDragY, isGroceryMode]);
 
@@ -943,33 +966,28 @@ export default function HomeScreen({
     const timeout = setTimeout(() => {
       homePanelHintAnimationRef.current?.stop();
       homePanelHintAnimationRef.current = null;
-
-      Animated.parallel([
-        Animated.timing(homeOpeningPromoOpacity, {
-          toValue: 0,
-          duration: 350,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.spring(homePanelDragY, {
-          toValue: 0,
-          stiffness: 170,
-          damping: 24,
-          mass: 0.92,
-          overshootClamping: true,
-          restDisplacementThreshold: 0.4,
-          restSpeedThreshold: 0.4,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
+      Animated.timing(homeOpeningPromoOpacity, {
+        toValue: 0,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        homePanelDragY.stopAnimation();
         homePanelDragY.setValue(0);
+        homePanelDragStartRef.current = 0;
         setHomePanelDragging(false);
         setHomeOpeningPromoVisible(false);
+        setHomeSurfaceResetKey((current) => current + 1);
       });
-    }, 4650);
+    }, 5000);
 
     return () => clearTimeout(timeout);
-  }, [homeOpeningPromoOpacity, homeOpeningPromoVisible, homePanelDragY, isGroceryMode]);
+  }, [
+    homeOpeningPromoOpacity,
+    homeOpeningPromoVisible,
+    homePanelDragY,
+    isGroceryMode,
+  ]);
 
   const tabsCollapseStyle = {
     opacity: scrollY.interpolate({
@@ -1502,13 +1520,11 @@ export default function HomeScreen({
 
       let paymentResult = paymentOrder;
       if (paymentOrder?.requiresGateway) {
-        const checkoutResult = await openRazorpayCheckout(paymentOrder);
+        const checkoutResult = await openCashfreeCheckout(paymentOrder);
         paymentResult = await verifyPayment(groceryAccessToken, {
           paymentId: paymentOrder.paymentId,
           gateway: paymentOrder.gateway,
-          gatewayOrderId: paymentOrder.orderId,
-          gatewayPaymentId: checkoutResult?.razorpay_payment_id,
-          gatewaySignature: checkoutResult?.razorpay_signature,
+          gatewayOrderId: checkoutResult?.orderId || paymentOrder.orderId,
         });
       } else if (paymentOrder?.gateway === "mock") {
         paymentResult = await verifyPayment(groceryAccessToken, {
@@ -1725,18 +1741,16 @@ export default function HomeScreen({
         </View>
       ) : null}
       <Animated.View
+        key={`home-surface-${homeSurfaceResetKey}`}
+        collapsable={false}
         style={[
           styles.screenRevealLayer,
           !isGroceryMode && (homePanelDragging || connectionBannerVisible) && styles.screenRevealLayerDragging,
-          {
-            transform: [
-              {
-                translateY: isGroceryMode
-                  ? screenRevealY
-                  : Animated.add(screenRevealY, homePanelDragY),
-              },
-            ],
-          },
+          isGroceryMode
+            ? { top: screenRevealY }
+            : (homePanelDragging || connectionBannerVisible)
+              ? { top: Animated.add(screenRevealY, homePanelDragY) }
+              : null,
         ]}
       >
         {!isGroceryMode && (homePanelDragging || connectionBannerVisible) ? (
@@ -1758,7 +1772,7 @@ export default function HomeScreen({
         {!isGroceryMode ? (
           <LinearGradient
             pointerEvents="none"
-            colors={["#FFF2CF", "#FFF8E7", "#FFFFFF"]}
+            colors={["#E0E7FF", "#EEF2FF", "#FFFFFF"]}
             locations={[0, 0.48, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0.9, y: 1 }}
@@ -1865,7 +1879,7 @@ export default function HomeScreen({
           isGroceryMode && styles.groceryScrollContent,
           (isParcelMode || isGroceryMode) && styles.parcelScrollContent,
         ]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F5A800" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4F46E5" />}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         decelerationRate="normal"
@@ -1937,7 +1951,7 @@ export default function HomeScreen({
                         />
                       ) : (
                         <View style={styles.rideServiceBentoIcon}>
-                          <AppIcon name={item.icon} size={30} color="#A96700" />
+                          <AppIcon name={item.icon} size={30} color="#3730A3" />
                         </View>
                       )}
                     </Pressable>
@@ -1963,7 +1977,7 @@ export default function HomeScreen({
                 style={StyleSheet.absoluteFillObject}
               />
               <View style={styles.rideOfferIcon}>
-                <AppIcon name="ticket-percent-outline" size={24} color="#F5A800" />
+                <AppIcon name="ticket-percent-outline" size={24} color="#4F46E5" />
               </View>
               <View style={styles.rideOfferCopy}>
                 <Text style={styles.rideOfferTitle}>Save on your next ride</Text>
@@ -2024,7 +2038,7 @@ export default function HomeScreen({
               onPress={() => onQuickServicePress?.({ key: "safety", mode: "ride" })}
             >
               <View style={styles.safetySupportIcon}>
-                <AppIcon name="safety" size={22} color="#F5A800" />
+                <AppIcon name="safety" size={22} color="#4F46E5" />
               </View>
               <View style={styles.safetySupportCopy}>
                 <Text style={styles.safetySupportTitle}>Safety and support</Text>
@@ -2101,7 +2115,7 @@ export default function HomeScreen({
             </View>
             <Pressable style={({ pressed }) => [styles.parcelOfferCard, pressed && styles.rideCardPressed]} onPress={() => onQuickServicePress?.({ key: "offers", mode: "parcel" })}>
               <View style={styles.parcelOfferIcon}>
-                <AppIcon name="ticket-percent-outline" size={23} color="#F5A800" />
+                <AppIcon name="ticket-percent-outline" size={23} color="#4F46E5" />
               </View>
               <View style={styles.rideOfferCopy}>
                 <Text style={styles.rideOfferTitle}>Save on your next delivery</Text>
@@ -2129,7 +2143,7 @@ export default function HomeScreen({
             </ScrollView>
 
             <Pressable style={styles.parcelProtectionCard} onPress={() => onQuickServicePress?.({ key: "safety", mode: "parcel" })}>
-              <View style={styles.safetySupportIcon}><AppIcon name="shield-check-outline" size={22} color="#F5A800" /></View>
+              <View style={styles.safetySupportIcon}><AppIcon name="shield-check-outline" size={22} color="#4F46E5" /></View>
               <View style={styles.safetySupportCopy}>
                 <Text style={styles.safetySupportTitle}>Package protection</Text>
                 <Text style={styles.safetySupportSubtitle}>Tracked delivery and verified partners</Text>
@@ -2451,7 +2465,7 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 5,
-    zIndex: 4
+    zIndex: 60
   },
   connectionBannerOffline: {
     backgroundColor: "#D92D20"
@@ -2594,7 +2608,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 8,
     borderRadius: 999,
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   dotsRow: {
     marginTop: 14,
@@ -2821,7 +2835,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.65,
   },
   deliveryHeaderEtaAccent: {
-    color: "#A96700",
+    color: "#3730A3",
   },
   deliveryHeaderTitleLight: {
     color: "#FFFFFF"
@@ -3070,7 +3084,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 8,
     borderRadius: 999,
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   parcelDotsRow: {
     marginTop: 14,
@@ -3198,7 +3212,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -3261,7 +3275,7 @@ const styles = StyleSheet.create({
   parcelVehicleVisual: {
     height: 94,
     borderRadius: 14,
-    backgroundColor: "#F4F7FB",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden"
@@ -3319,7 +3333,7 @@ const styles = StyleSheet.create({
   },
   parcelSizeChoiceSelected: {
     backgroundColor: "#FFF8E5",
-    borderColor: "#F5A800"
+    borderColor: "#4F46E5"
   },
   parcelSizeChoiceLabel: {
     color: "#344054",
@@ -3328,7 +3342,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   parcelSizeChoiceLabelSelected: {
-    color: "#A96700"
+    color: "#3730A3"
   },
   parcelSizeChoiceMeta: {
     marginTop: 2,
@@ -3338,7 +3352,7 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   parcelSizeChoiceMetaSelected: {
-    color: "#A96700"
+    color: "#3730A3"
   },
   parcelTypeRow: {
     marginTop: 10,
@@ -3361,12 +3375,12 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 13,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
   parcelTypeIconSelected: {
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   parcelTypeLabel: {
     maxWidth: "95%",
@@ -3377,7 +3391,7 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   parcelTypeLabelSelected: {
-    color: "#A96700"
+    color: "#3730A3"
   },
   parcelDeliveryOptions: {
     marginTop: 10,
@@ -3407,7 +3421,7 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   parcelDeliveryLabelSelected: {
-    color: "#A96700",
+    color: "#3730A3",
     fontWeight: "900"
   },
   parcelDeliveryMeta: {
@@ -3418,7 +3432,7 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   parcelDeliveryMetaSelected: {
-    color: "#A96700"
+    color: "#3730A3"
   },
   parcelOfferCard: {
     minHeight: 82,
@@ -3517,10 +3531,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
     height: 54,
     borderRadius: 18,
-    backgroundColor: "#F5A800",
+    backgroundColor: "#4F46E5",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A96700",
+    shadowColor: "#3730A3",
     shadowOpacity: 0,
     shadowRadius: 16,
     shadowOffset: {
@@ -3536,7 +3550,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   parcelEyebrow: {
-    color: "#A96700",
+    color: "#3730A3",
     fontSize: 11,
     lineHeight: 14,
     fontWeight: "900",
@@ -3655,12 +3669,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
   parcelSizeIconWrapSelected: {
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   parcelSizeSubtitle: {
     marginTop: 5,
@@ -3876,7 +3890,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -4009,7 +4023,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   rideSeeAllText: {
-    color: "#A96700",
+    color: "#3730A3",
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "700"
@@ -4087,7 +4101,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   vehicleDockImageWrap: {
     height: 76,
@@ -4135,7 +4149,7 @@ const styles = StyleSheet.create({
     width: 31,
     height: 31,
     borderRadius: 11,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -4301,7 +4315,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 13,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -4326,7 +4340,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: "#FFF3D0",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center"
   },
@@ -4414,12 +4428,8 @@ const styles = StyleSheet.create({
     zIndex: 80
   },
   homeRevealBackdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: HOME_PANEL_REVEAL,
-    backgroundColor: "#F1F0F5",
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#FFFFFF",
     overflow: "hidden",
     zIndex: 1
   },
@@ -4440,21 +4450,21 @@ const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 6,
-    backgroundColor: "#F5A800"
+    backgroundColor: "#4F46E5"
   },
   homeMajorOffer: {
     position: "absolute",
-    top: 12,
-    left: 12,
-    right: 12,
-    bottom: 12,
-    borderRadius: 24,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 0,
     backgroundColor: "rgba(255,255,255,0.96)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.88)",
-    paddingLeft: 24,
-    paddingRight: 14,
-    paddingVertical: 22,
+    borderWidth: 0,
+    borderColor: "transparent",
+    paddingLeft: 26,
+    paddingRight: 16,
+    paddingVertical: 24,
     flexDirection: "row",
     alignItems: "center",
     overflow: "hidden",
@@ -4466,7 +4476,7 @@ const styles = StyleSheet.create({
     zIndex: 2
   },
   homeMajorOfferEyebrow: {
-    color: "#A96700",
+    color: "#3730A3",
     fontSize: 11,
     lineHeight: 15,
     fontWeight: "900",
@@ -4482,7 +4492,7 @@ const styles = StyleSheet.create({
   },
   homeMajorOfferAction: {
     marginTop: 18,
-    color: "#A96700",
+    color: "#3730A3",
     fontSize: 14,
     lineHeight: 18,
     fontWeight: "900"

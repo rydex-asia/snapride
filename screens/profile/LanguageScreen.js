@@ -38,7 +38,7 @@ export default function LanguageScreen({ onBack, initialLanguage = "en", onConti
 
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Language" subtitle="Choose your preferred language" onBack={onBack} />
 
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -56,10 +56,9 @@ export default function LanguageScreen({ onBack, initialLanguage = "en", onConti
           <Text style={styles.sectionLabel}>Available languages</Text>
           <View style={styles.card}>
             {LANGUAGES.map((item, index) => (
-              <View key={item.key}>
+            <View key={item.key} style={index !== LANGUAGES.length - 1 && styles.rowSpacing}>
                 <LanguageRow item={item} selected={selected === item.key} onPress={() => setSelected(item.key)} />
-                {index !== LANGUAGES.length - 1 ? <View style={styles.divider} /> : null}
-              </View>
+            </View>
             ))}
           </View>
         </View>
@@ -82,18 +81,11 @@ export default function LanguageScreen({ onBack, initialLanguage = "en", onConti
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 14
+    backgroundColor: "transparent",
   },
   content: {
     padding: 16,
     paddingBottom: 28
-  },
-  divider: {
-    height: 1,
-    marginLeft: 0,
-    backgroundColor: "#F0F2F5"
   },
   footer: {
     marginTop: 16,
@@ -145,13 +137,17 @@ const styles = StyleSheet.create({
   },
   row: {
     minHeight: 64,
-    borderRadius: 16,
+    paddingHorizontal: 0,
+    borderRadius: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
   },
   rowPressed: {
     opacity: 0.76
+  },
+  rowSpacing: {
+    marginBottom: 12
   },
   rowLabel: {
     color: "#111827",
@@ -176,11 +172,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   secondaryButton: {
     flex: 1,

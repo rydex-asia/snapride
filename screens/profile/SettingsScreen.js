@@ -1,71 +1,111 @@
-import React, { useState } from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Switch, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppIcon from "../../components/AppIcon";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
-const NAVIGATION_GROUPS = [
+const GENERAL_ITEMS = [
   {
-    title: "Account",
-    items: [
-      { key: "profile", icon: "account-outline", label: "Personal details", value: "Name and phone number" },
-      { key: "addresses", icon: "map-marker-outline", label: "Saved places", value: "Home, work and frequent places" },
-    ],
+    key: "profile",
+    icon: "account-outline",
+    label: "Profile",
+    detail: "Name, phone and personal details",
   },
   {
-    title: "Payments",
-    items: [
-      { key: "payments", icon: "credit-card-outline", label: "Payment methods", value: "UPI, cards and cash" },
-      { key: "transactions", icon: "receipt-text-outline", label: "Transactions", value: "Payments and refunds" },
-    ],
+    key: "addresses",
+    icon: "map-marker-outline",
+    label: "Saved places",
+    detail: "Home, work and favourite locations",
+  },
+  {
+    key: "payments",
+    icon: "credit-card-outline",
+    label: "Payment methods",
+    detail: "UPI, cards and cash",
+  },
+  {
+    key: "transactions",
+    icon: "receipt-text-outline",
+    label: "Transactions",
+    detail: "Payments, refunds and invoices",
   },
 ];
 
-function NavigationRow({ item, isLast, onPress }) {
+const OTHER_ITEMS = [
+  {
+    key: "language",
+    icon: "translate",
+    label: "Language",
+    detail: "English",
+    value: "EN",
+  },
+  {
+    key: "about",
+    icon: "information-outline",
+    label: "About Rydex",
+    detail: "Privacy, terms and app information",
+    value: "0.1.0",
+  },
+];
+
+function SettingsRow({ item, last, onPress, destructive = false }) {
   return (
-    <View>
+    <View style={!last && styles.rowSpacing}>
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
         style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       >
         <View style={styles.rowIcon}>
-          <AppIcon name={item.icon} size={21} color="#394150" />
+          <AppIcon name={item.icon} size={24} color={destructive ? "#C63232" : "#47586A"} />
         </View>
         <View style={styles.rowCopy}>
-          <Text style={styles.rowLabel}>{item.label}</Text>
-          <Text style={styles.rowValue} numberOfLines={1}>{item.value}</Text>
+          <Text style={[styles.rowTitle, destructive && styles.destructive]}>{item.label}</Text>
+          {item.detail ? (
+            <Text style={styles.rowDetail} numberOfLines={2}>{item.detail}</Text>
+          ) : null}
         </View>
-        <AppIcon name="chevronRight" size={19} color="#92959B" />
+        {item.value ? <Text style={styles.rowValue}>{item.value}</Text> : null}
+        <AppIcon name="chevronRight" size={21} color="#737B85" />
       </Pressable>
-      {!isLast ? <View style={styles.divider} /> : null}
     </View>
   );
 }
 
-function ToggleRow({ label, description, value, onValueChange, isLast }) {
+function SwitchRow({ icon, label, detail, value, onValueChange, last }) {
   return (
-    <View>
-      <View style={styles.toggleRow}>
-        <View style={styles.toggleCopy}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          <Text style={styles.rowValue}>{description}</Text>
+    <View style={!last && styles.rowSpacing}>
+      <View style={styles.row}>
+        <View style={styles.rowIcon}>
+          <AppIcon name={icon} size={24} color="#47586A" />
+        </View>
+        <View style={styles.rowCopy}>
+          <Text style={styles.rowTitle}>{label}</Text>
+          <Text style={styles.rowDetail}>{detail}</Text>
         </View>
         <Switch
           value={value}
           onValueChange={onValueChange}
-          trackColor={{ false: "#D8DADE", true: "#F2B317" }}
+          trackColor={{ false: "#D7DCE2", true: "#202124" }}
           thumbColor="#FFFFFF"
-          ios_backgroundColor="#D8DADE"
+          ios_backgroundColor="#D7DCE2"
         />
       </View>
-      {!isLast ? <View style={styles.toggleDivider} /> : null}
     </View>
   );
 }
 
 export default function SettingsScreen({
   onBack,
+  onOpenHelp,
   onOpenEditProfile,
   onOpenSavedPlaces,
   onOpenTransactions,
@@ -75,8 +115,19 @@ export default function SettingsScreen({
   const insets = useSafeAreaInsets();
   const [rideUpdates, setRideUpdates] = useState(true);
   const [offerUpdates, setOfferUpdates] = useState(false);
+  const [headerBorder, setHeaderBorder] = useState(false);
+  const entrance = useRef(new Animated.Value(0)).current;
 
-  const handleItemPress = (key) => {
+  useEffect(() => {
+    Animated.timing(entrance, {
+      toValue: 1,
+      duration: 360,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [entrance]);
+
+  const openItem = (key) => {
     if (key === "profile") return onOpenEditProfile?.();
     if (key === "addresses") return onOpenSavedPlaces?.();
     if (key === "payments") return onOpenPayments?.();
@@ -85,108 +136,143 @@ export default function SettingsScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Settings" eyebrow="Account and app preferences" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Settings"
+        onBack={onBack}
+        actionLabel="Help"
+        onAction={onOpenHelp}
+        elevated={headerBorder}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
-      <ScrollView
+      <Animated.ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: Math.max(34, insets.bottom + 24) }]}
+        onScroll={(event) => setHeaderBorder(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(36, insets.bottom + 24) }]}
       >
-        {NAVIGATION_GROUPS.map((group) => (
-          <View key={group.title} style={styles.group}>
-            <Text style={styles.sectionTitle}>{group.title}</Text>
-            <View style={styles.groupList}>
-              {group.items.map((item, index) => (
-                <NavigationRow
-                  key={item.key}
-                  item={item}
-                  isLast={index === group.items.length - 1}
-                  onPress={() => handleItemPress(item.key)}
-                />
-              ))}
-            </View>
+        <Animated.View
+          style={{
+            opacity: entrance,
+            transform: [{
+              translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }),
+            }],
+          }}
+        >
+          <Text style={styles.sectionLabel}>GENERAL</Text>
+          <View style={styles.group}>
+            {GENERAL_ITEMS.map((item, index) => (
+              <SettingsRow
+                key={item.key}
+                item={item}
+                last={index === GENERAL_ITEMS.length - 1}
+                onPress={() => openItem(item.key)}
+              />
+            ))}
           </View>
-        ))}
 
-        <View style={styles.group}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <View style={styles.groupList}>
-            <ToggleRow
-              label="Ride and delivery updates"
-              description="Status changes, arrival and receipts"
+          <Text style={styles.sectionLabel}>COMMUNICATION</Text>
+          <View style={styles.group}>
+            <SwitchRow
+              icon="bell-outline"
+              label="Trip updates"
+              detail="Captain arrival, delivery and receipts"
               value={rideUpdates}
               onValueChange={setRideUpdates}
             />
-            <ToggleRow
-              label="Offers and recommendations"
-              description="Discounts and personalised suggestions"
+            <SwitchRow
+              icon="tag-outline"
+              label="Offers and updates"
+              detail="Relevant savings and recommendations"
               value={offerUpdates}
               onValueChange={setOfferUpdates}
-              isLast
+              last
             />
           </View>
-        </View>
 
-        <View style={styles.group}>
-          <Text style={styles.sectionTitle}>App</Text>
-          <View style={styles.groupList}>
-            <View style={styles.infoRow}>
-              <Text style={styles.rowLabel}>Language</Text>
-              <Text style={styles.infoValue}>English</Text>
-            </View>
-            <View style={styles.infoDivider} />
-            <View style={styles.infoRow}>
-              <Text style={styles.rowLabel}>Version</Text>
-              <Text style={styles.infoValue}>0.1.0</Text>
-            </View>
+          <Text style={styles.sectionLabel}>OTHERS</Text>
+          <View style={styles.group}>
+            {OTHER_ITEMS.map((item, index) => (
+              <SettingsRow
+                key={item.key}
+                item={item}
+                last={index === OTHER_ITEMS.length - 1}
+              />
+            ))}
           </View>
-        </View>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenLogout}
-          style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-        >
-          <AppIcon name="logout" size={20} color="#B42318" />
-          <Text style={styles.logoutText}>Log out</Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+          <View style={styles.accountActions}>
+            <SettingsRow
+              item={{ icon: "logout", label: "Log out", detail: "Sign out of this device" }}
+              onPress={onOpenLogout}
+              last
+              destructive
+            />
+          </View>
+        </Animated.View>
+      </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 16, paddingTop: 4 },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 70, backgroundColor: "#E2E4E7" },
-  group: { marginTop: 20 },
-  groupList: { borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
-  infoDivider: { height: StyleSheet.hairlineWidth, marginLeft: 14, backgroundColor: "#E2E4E7" },
-  infoRow: { minHeight: 58, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  infoValue: { color: "#747780", fontSize: 13, lineHeight: 17, fontWeight: "500" },
-  logout: {
-    marginTop: 24,
-    minHeight: 54,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
+  safe: { flex: 1, backgroundColor: "#FFFFFF" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { paddingHorizontal: 18, paddingTop: 1 },
+  sectionLabel: {
+    marginTop: 22,
+    marginBottom: 8,
+    marginLeft: 7,
+    color: "#3730A3",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "800",
+    letterSpacing: 0.55,
+  },
+  group: {
+    backgroundColor: "transparent",
+  },
+  row: {
+    minHeight: 82,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
   },
-  logoutText: { color: "#B42318", fontSize: 14, lineHeight: 19, fontWeight: "700" },
-  pressed: { opacity: 0.62 },
-  row: { minHeight: 74, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
-  rowCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
-  rowIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
-  rowLabel: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  rowPressed: { backgroundColor: "#F7F8F9" },
-  rowValue: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
-  sectionTitle: { marginBottom: 9, color: "#656970", fontSize: 13, lineHeight: 17, fontWeight: "600" },
-  toggleCopy: { flex: 1, minWidth: 0, marginRight: 12 },
-  toggleDivider: { height: StyleSheet.hairlineWidth, marginLeft: 14, backgroundColor: "#E2E4E7" },
-  toggleRow: { minHeight: 76, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
+  rowPressed: { opacity: 0.68 },
+  rowSpacing: { marginBottom: 0 },
+  rowIcon: {
+    width: 38,
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  rowCopy: { flex: 1, minWidth: 0, paddingRight: 10 },
+  rowTitle: {
+    color: "#16191D",
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "700",
+  },
+  rowDetail: {
+    marginTop: 3,
+    color: "#66717F",
+    fontSize: 12.5,
+    lineHeight: 17,
+    fontWeight: "400",
+  },
+  rowValue: {
+    marginRight: 10,
+    color: "#7C838D",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "600",
+  },
+  accountActions: {
+    marginTop: 2,
+    backgroundColor: "transparent",
+  },
+  destructive: { color: "#B82A2A" },
 });

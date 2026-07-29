@@ -8,8 +8,14 @@ import { CreatePaymentOrderDto } from './dto/create-payment-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
-type RazorpayOrderResponse = { id: string; amount: number; currency: string; status: string };
-type RazorpayPaymentResponse = { id: string; order_id: string; amount: number; currency: string; status: string; error_description?: string };
+type CashfreeOrderResponse = {
+  order_id: string;
+  cf_order_id: string;
+  payment_session_id: string;
+  order_amount: number;
+  order_currency: string;
+  order_status: string;
+};
 
 @Injectable()
 export class PaymentsService {
@@ -59,7 +65,7 @@ export class PaymentsService {
       return this.paymentOrderResponse(payment, { gateway: 'cash', requiresGateway: false });
     }
 
-    if (!this.isRazorpayEnabled()) {
+    if (!this.isCashfreeEnabled()) {
       if (this.config.get<string>('NODE_ENV') === 'production') {
         throw new InternalServerErrorException('Payment gateway is not configured');
       }
@@ -71,16 +77,20 @@ export class PaymentsService {
       return this.paymentOrderResponse(updated, { gateway: 'mock', requiresGateway: false });
     }
 
-    const razorpayOrder = await this.createRazorpayOrder(payment.id, amount, currency, dto);
+    const cashfreeOrder = await this.createCashfreeOrder(payment.id, amount, currency, dto, userId);
     const updated = await this.prisma.payment.update({
       where: { id: payment.id },
-      data: { gatewayOrderId: razorpayOrder.id, externalRef: razorpayOrder.id },
+      data: {
+        gatewayOrderId: cashfreeOrder.order_id,
+        externalRef: cashfreeOrder.cf_order_id,
+        metadata: { ...(dto.metadata || {}), cashfreePaymentSessionId: cashfreeOrder.payment_session_id },
+      },
     });
     return this.paymentOrderResponse(updated, {
-      gateway: 'razorpay',
+      gateway: 'cashfree',
       requiresGateway: true,
-      keyId: this.config.getOrThrow<string>('RAZORPAY_KEY_ID'),
-      amountPaise: razorpayOrder.amount,
+      paymentSessionId: cashfreeOrder.payment_session_id,
+      environment: this.config.get<string>('CASHFREE_ENVIRONMENT', 'SANDBOX'),
       name: 'Frezo',
       description: dto.description || 'Frezo grocery order',
     });
@@ -98,54 +108,51 @@ export class PaymentsService {
       if (this.config.get<string>('NODE_ENV') === 'production') throw new BadRequestException('Mock payments are disabled');
       return this.finalizePaidPayment(payment.id, `mock_payment_${payment.id}`);
     }
-    if (!dto.gatewayPaymentId || !dto.gatewaySignature) {
-      throw new BadRequestException('Missing gateway payment verification data');
+    const gatewayOrder = await this.fetchCashfreeOrder(payment.gatewayOrderId);
+    if (gatewayOrder.order_amount !== Number(payment.amount)) throw new BadRequestException('Gateway amount mismatch');
+    if (gatewayOrder.order_status === 'PAID') {
+      return this.finalizePaidPayment(payment.id, dto.gatewayPaymentId || payment.gatewayOrderId);
     }
-
-    const secret = this.config.get<string>('RAZORPAY_KEY_SECRET');
-    if (!secret) throw new InternalServerErrorException('Razorpay secret is not configured');
-    const expected = createHmac('sha256', secret)
-      .update(`${payment.gatewayOrderId}|${dto.gatewayPaymentId}`)
-      .digest('hex');
-    if (!this.safeCompare(expected, dto.gatewaySignature)) {
-      await this.markFailed(payment.id, 'Invalid payment signature');
-      throw new BadRequestException('Invalid payment signature');
-    }
-
-    const gatewayPayment = await this.fetchRazorpayPayment(dto.gatewayPaymentId);
-    if (gatewayPayment.order_id !== payment.gatewayOrderId) throw new BadRequestException('Gateway order mismatch');
-    if (gatewayPayment.amount !== this.toMinorUnits(Number(payment.amount))) throw new BadRequestException('Gateway amount mismatch');
-    if (gatewayPayment.status === 'captured') {
-      return this.finalizePaidPayment(payment.id, gatewayPayment.id);
-    }
-    if (gatewayPayment.status === 'authorized') {
+    if (gatewayOrder.order_status === 'ACTIVE') {
       return this.prisma.payment.update({
         where: { id: payment.id },
-        data: { status: PaymentStatus.AUTHORIZED, gatewayPaymentId: gatewayPayment.id, verifiedAt: new Date() },
+        data: { status: PaymentStatus.AUTHORIZED, gatewayPaymentId: dto.gatewayPaymentId, verifiedAt: new Date() },
       });
     }
-    await this.markFailed(payment.id, gatewayPayment.error_description || `Gateway status: ${gatewayPayment.status}`);
-    throw new BadRequestException('Payment was not captured');
+    await this.markFailed(payment.id, `Cashfree order status: ${gatewayOrder.order_status}`);
+    throw new BadRequestException('Payment was not completed');
   }
 
   async getStatus(userId: string, paymentId: string) {
     const payment = await this.prisma.payment.findFirst({ where: { id: paymentId, userId } });
     if (!payment) throw new NotFoundException('Payment not found');
+    if (
+      (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)
+      && payment.gatewayOrderId
+      && !payment.gatewayOrderId.startsWith('mock_')
+      && this.isCashfreeEnabled()
+    ) {
+      const gatewayOrder = await this.fetchCashfreeOrder(payment.gatewayOrderId);
+      if (gatewayOrder.order_status === 'PAID') {
+        return this.finalizePaidPayment(payment.id, payment.gatewayPaymentId || payment.gatewayOrderId);
+      }
+    }
     return payment;
   }
 
-  async handleRazorpayWebhook(rawBody: Buffer | undefined, signature: string, eventId: string, payload: any) {
-    const secret = this.config.get<string>('RAZORPAY_WEBHOOK_SECRET');
-    if (!secret || !rawBody || !signature || !eventId) throw new BadRequestException('Invalid webhook request');
-    const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+  async handleCashfreeWebhook(rawBody: Buffer | undefined, signature: string, timestamp: string, eventId: string, payload: any) {
+    const secret = this.config.get<string>('CASHFREE_CLIENT_SECRET');
+    if (!secret || !rawBody || !signature || !timestamp || !eventId) throw new BadRequestException('Invalid webhook request');
+    const expected = createHmac('sha256', secret).update(`${timestamp}${rawBody.toString('utf8')}`).digest('base64');
     if (!this.safeCompare(expected, signature)) throw new BadRequestException('Invalid webhook signature');
     const existing = await this.prisma.paymentWebhookEvent.findUnique({ where: { eventId } });
     if (existing) return { received: true, duplicate: true };
 
-    const eventType = String(payload?.event || 'unknown');
-    const entity = payload?.payload?.payment?.entity;
-    const gatewayOrderId = entity?.order_id || payload?.payload?.order?.entity?.id;
-    const gatewayPaymentId = entity?.id;
+    const eventType = String(payload?.type || payload?.event || 'unknown');
+    const data = payload?.data || {};
+    const entity = data?.payment || data?.order || {};
+    const gatewayOrderId = entity?.order?.order_id || entity?.order_id || data?.order?.order_id;
+    const gatewayPaymentId = entity?.cf_payment_id || entity?.payment_id;
     if (!gatewayOrderId) {
       await this.recordWebhookEvent(eventId, eventType);
       return { received: true };
@@ -156,16 +163,13 @@ export class PaymentsService {
       return { received: true };
     }
 
-    const event = String(payload?.event || '');
-    if (event === 'payment.captured' || event === 'order.paid') {
+    const event = String(payload?.type || payload?.event || '');
+    if (event.includes('SUCCESS') || event.includes('success') || event === 'PAYMENT_SUCCESS_WEBHOOK') {
       await this.finalizePaidPayment(payment.id, gatewayPaymentId || payment.gatewayPaymentId || undefined);
-    } else if (event === 'payment.failed') {
-      await this.markFailed(payment.id, entity?.error_description || 'Payment failed');
-    } else if (event === 'payment.authorized' && payment.status === PaymentStatus.PENDING) {
-      await this.prisma.payment.update({
-        where: { id: payment.id },
-        data: { status: PaymentStatus.AUTHORIZED, gatewayPaymentId, verifiedAt: new Date() },
-      });
+    } else if (event.includes('FAILED') || event.includes('failed') || event.includes('USER_DROPPED')) {
+      await this.markFailed(payment.id, entity?.payment_message || 'Payment failed');
+    } else if (event.includes('AUTHORIZED') && payment.status === PaymentStatus.PENDING) {
+      await this.prisma.payment.update({ where: { id: payment.id }, data: { status: PaymentStatus.AUTHORIZED, gatewayPaymentId, verifiedAt: new Date() } });
     }
     await this.recordWebhookEvent(eventId, eventType);
     return { received: true };
@@ -175,7 +179,7 @@ export class PaymentsService {
     await this.prisma.paymentWebhookEvent.upsert({
       where: { eventId },
       update: {},
-      create: { provider: 'razorpay', eventId, eventType },
+      create: { provider: 'cashfree', eventId, eventType },
     });
   }
 
@@ -234,52 +238,59 @@ export class PaymentsService {
   }
 
   private async markFailed(paymentId: string, failureReason: string) {
-    return this.prisma.payment.update({
-      where: { id: paymentId },
+    await this.prisma.payment.updateMany({
+      where: { id: paymentId, status: { in: [PaymentStatus.PENDING, PaymentStatus.AUTHORIZED] } },
       data: { status: PaymentStatus.FAILED, failureReason, verifiedAt: new Date() },
     });
+    return this.prisma.payment.findUniqueOrThrow({ where: { id: paymentId } });
   }
 
   private paymentOrderResponse(payment: any, overrides: Record<string, unknown> = {}) {
-    const gateway = payment.gatewayOrderId?.startsWith('mock_') ? 'mock' : payment.gatewayOrderId ? 'razorpay' : 'internal';
+    const gateway = payment.gatewayOrderId?.startsWith('mock_') ? 'mock' : payment.gatewayOrderId ? 'cashfree' : 'internal';
+    const metadata = payment.metadata && typeof payment.metadata === 'object' ? payment.metadata : {};
     return {
       paymentId: payment.id,
       gateway,
-      requiresGateway: gateway === 'razorpay',
-      keyId: gateway === 'razorpay' ? this.config.get<string>('RAZORPAY_KEY_ID') : undefined,
+      requiresGateway: gateway === 'cashfree',
       orderId: payment.gatewayOrderId || `internal_${payment.id}`,
       amount: Number(payment.amount),
       amountPaise: this.toMinorUnits(Number(payment.amount)),
       currency: payment.currency,
       status: payment.status,
+      paymentSessionId: gateway === 'cashfree' ? metadata.cashfreePaymentSessionId : undefined,
+      environment: gateway === 'cashfree' ? this.config.get<string>('CASHFREE_ENVIRONMENT', 'SANDBOX') : undefined,
       ...overrides,
     };
   }
 
-  private async createRazorpayOrder(paymentId: string, amount: number, currency: string, dto: CreatePaymentOrderDto): Promise<RazorpayOrderResponse> {
-    const keyId = this.config.getOrThrow<string>('RAZORPAY_KEY_ID');
-    const keySecret = this.config.getOrThrow<string>('RAZORPAY_KEY_SECRET');
-    const response = await fetch('https://api.razorpay.com/v1/orders', {
+  private async createCashfreeOrder(paymentId: string, amount: number, currency: string, dto: CreatePaymentOrderDto, userId: string): Promise<CashfreeOrderResponse> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { phone: true, email: true, fullName: true } });
+    const customerPhone = String(user?.phone || dto.metadata?.customerPhone || '').replace(/\D/g, '').slice(-10);
+    if (customerPhone.length !== 10) throw new BadRequestException('A valid customer phone number is required for Cashfree');
+    const response = await fetch(`${this.cashfreeBaseUrl()}/pg/orders`, {
       method: 'POST',
-      headers: { Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`, 'Content-Type': 'application/json' },
+      headers: this.cashfreeHeaders(paymentId),
       body: JSON.stringify({
-        amount: this.toMinorUnits(amount), currency, receipt: paymentId,
-        notes: { sourceApp: dto.sourceApp, orderType: dto.orderType, orderId: dto.orderId || '', provider: dto.provider, ...(dto.metadata || {}) },
+        order_amount: Number(amount.toFixed(2)), order_currency: currency, order_id: paymentId,
+        customer_details: {
+          customer_id: userId,
+          customer_phone: customerPhone,
+          ...(user?.email || dto.metadata?.customerEmail ? { customer_email: user?.email || dto.metadata?.customerEmail } : {}),
+          ...(user?.fullName ? { customer_name: user.fullName } : {}),
+        },
+        order_note: dto.description || 'Rydex booking',
+        order_tags: { sourceApp: dto.sourceApp, orderType: dto.orderType, orderId: dto.orderId || '', provider: dto.provider, ...(dto.metadata || {}) },
       }),
     });
-    const data = (await response.json().catch(() => ({}))) as RazorpayOrderResponse & { error?: { description?: string } };
-    if (!response.ok) throw new BadRequestException(data.error?.description || 'Unable to create Razorpay order');
+    const data = (await response.json().catch(() => ({}))) as CashfreeOrderResponse & { message?: string };
+    if (!response.ok) throw new BadRequestException(data.message || 'Unable to create Cashfree order');
     return data;
   }
 
-  private async fetchRazorpayPayment(paymentId: string): Promise<RazorpayPaymentResponse> {
-    const keyId = this.config.getOrThrow<string>('RAZORPAY_KEY_ID');
-    const keySecret = this.config.getOrThrow<string>('RAZORPAY_KEY_SECRET');
-    const response = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`, {
-      headers: { Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}` },
-    });
-    const data = (await response.json().catch(() => ({}))) as RazorpayPaymentResponse & { error?: { description?: string } };
-    if (!response.ok) throw new BadRequestException(data.error?.description || 'Unable to verify gateway payment');
+  private async fetchCashfreeOrder(orderId: string): Promise<CashfreeOrderResponse> {
+    const response = await fetch(`${this.cashfreeBaseUrl()}/pg/orders/${encodeURIComponent(orderId)}`, { headers: this.cashfreeHeaders() });
+    const data = (await response.json().catch(() => ({}))) as CashfreeOrderResponse & { message?: string };
+    if (!response.ok) throw new BadRequestException(data.message || 'Unable to verify Cashfree order');
     return data;
   }
 
@@ -290,10 +301,26 @@ export class PaymentsService {
     return { groceryOrderId: orderId };
   }
 
-  private isRazorpayEnabled() {
-    return this.config.get<string>('PAYMENT_GATEWAY', 'mock') === 'razorpay'
-      && Boolean(this.config.get<string>('RAZORPAY_KEY_ID'))
-      && Boolean(this.config.get<string>('RAZORPAY_KEY_SECRET'));
+  private isCashfreeEnabled() {
+    return this.config.get<string>('PAYMENT_GATEWAY', 'mock') === 'cashfree'
+      && Boolean(this.config.get<string>('CASHFREE_CLIENT_ID'))
+      && Boolean(this.config.get<string>('CASHFREE_CLIENT_SECRET'));
+  }
+
+  private cashfreeBaseUrl() {
+    return this.config.get<string>('CASHFREE_ENVIRONMENT', 'SANDBOX') === 'PRODUCTION'
+      ? 'https://api.cashfree.com'
+      : 'https://sandbox.cashfree.com';
+  }
+
+  private cashfreeHeaders(requestId?: string) {
+    return {
+      'Content-Type': 'application/json',
+      'x-api-version': this.config.get<string>('CASHFREE_API_VERSION', '2025-01-01'),
+      'x-client-id': this.config.getOrThrow<string>('CASHFREE_CLIENT_ID'),
+      'x-client-secret': this.config.getOrThrow<string>('CASHFREE_CLIENT_SECRET'),
+      ...(requestId ? { 'x-request-id': requestId, 'x-idempotency-key': requestId } : {}),
+    };
   }
 
   private safeCompare(expected: string, actual: string) {

@@ -40,7 +40,8 @@
     "joi": "^17.13.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "ws": "~8.18.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
@@ -49,6 +50,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.17.0",

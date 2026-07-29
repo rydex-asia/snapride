@@ -1057,7 +1057,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     borderWidth: 1,
     borderColor: "#D9DDE3",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
     gap: 9,

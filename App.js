@@ -75,7 +75,7 @@ import {
   saveDeliveryAddress,
   verifyPayment,
 } from "./platformApi";
-import { openRazorpayCheckout } from "./payments/razorpayCheckout";
+import { openCashfreeCheckout } from "./payments/cashfreeCheckout";
 import {
   captureOperationalError,
   setMonitoringScreen,
@@ -608,6 +608,7 @@ export default function App() {
   const previousScreenRef = useRef("splash");
   const homeScrollY = useRef(new Animated.Value(0)).current;
   const travelScrollY = useRef(new Animated.Value(0)).current;
+  const profileScrollY = useRef(new Animated.Value(0)).current;
   const [homeMode, setHomeMode] = useState("ride");
   const [selectedRideKey, setSelectedRideKey] = useState("bike");
   const [selectedJourneyRide, setSelectedJourneyRide] = useState(null);
@@ -1874,13 +1875,11 @@ export default function App() {
       return paymentOrder;
     }
 
-    const checkoutResult = await openRazorpayCheckout(paymentOrder, profileData);
+    const checkoutResult = await openCashfreeCheckout(paymentOrder);
     await verifyPayment(session.accessToken, {
       paymentId: paymentOrder.paymentId,
       gateway: paymentOrder.gateway,
-      gatewayOrderId: checkoutResult?.razorpay_order_id || paymentOrder.orderId,
-      gatewayPaymentId: checkoutResult?.razorpay_payment_id,
-      gatewaySignature: checkoutResult?.razorpay_signature,
+      gatewayOrderId: checkoutResult?.orderId || paymentOrder.orderId,
     });
 
     return paymentOrder;
@@ -2619,6 +2618,21 @@ export default function App() {
           <MessageCaptainScreen
             onBack={() => setCurrentScreen(messageCaptainReturnScreen)}
             onCall={() => {}}
+            captainName={
+              selectedJourneyRide?.captainName
+              || selectedJourneyRide?.driverName
+              || selectedRide?.captainName
+              || selectedRide?.driverName
+              || rideAcceptance?.captainName
+              || "Ravi Kumar"
+            }
+            arrivalLabel={
+              messageCaptainReturnScreen === "onTrip"
+                ? "Your trip is in progress"
+                : messageCaptainReturnScreen === "tripCompleted"
+                  ? "Trip completed"
+                  : `Arriving in ${rideAcceptance?.eta || "3 min"}`
+            }
           />
         );
       case "safety":
@@ -2656,6 +2670,7 @@ export default function App() {
             onOpenReceipts={openReceiptsFromProfile}
             onOpenRefunds={openRefundsFromProfile}
             onOpenFareBreakdown={openFareBreakdownFromProfile}
+            scrollY={profileScrollY}
           />
         );
       case "editProfile":
@@ -2676,6 +2691,7 @@ export default function App() {
         return (
           <SettingsScreen
             onBack={() => setCurrentScreen("profile")}
+            onOpenHelp={() => setCurrentScreen("support")}
             onOpenEditProfile={() => setCurrentScreen("editProfile")}
             onOpenSavedPlaces={() => openSavedPlacesFromProfile("settings")}
             onOpenPayments={() => {
@@ -2911,9 +2927,7 @@ export default function App() {
             backgroundColor={
               transitionTargetScreen === "home"
                 ? "transparent"
-                : showRideStatusBarShadow
-                  ? "#F9FAFC"
-                  : "#EAF2FA"
+                  : "#FFFFFF"
             }
             animated
           />
@@ -2970,6 +2984,19 @@ export default function App() {
                     extrapolate: "clamp",
                   }),
                 }],
+              } : currentScreen === "profile" ? {
+                opacity: profileScrollY.interpolate({
+                  inputRange: [0, 54, 132],
+                  outputRange: [1, 0.92, 0],
+                  extrapolate: "clamp",
+                }),
+                transform: [{
+                  translateY: profileScrollY.interpolate({
+                    inputRange: [0, 48, 138],
+                    outputRange: [0, 12, 76],
+                    extrapolate: "clamp",
+                  }),
+                }],
               } : null}
             />
           ) : null}
@@ -3014,11 +3041,11 @@ const styles = StyleSheet.create({
   },
   app: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screenTransition: {
     flex: 1,
-    backgroundColor: "#F6F8FC",
+    backgroundColor: "#FFFFFF",
     overflow: "hidden",
     position: "relative"
   },

@@ -4,15 +4,14 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const QUICK_AMOUNTS = [100, 200, 500, 1000];
 
@@ -66,6 +65,7 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
   const initialAmount = Number(String(amount || "200").replace(/[^0-9]/g, "")) || 200;
   const [selectedAmount, setSelectedAmount] = useState(initialAmount);
   const [customAmount, setCustomAmount] = useState("");
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   const payAmount = useMemo(() => {
     const custom = Number(customAmount.replace(/[^0-9]/g, ""));
@@ -77,9 +77,14 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Add money" eyebrow="Rydex Wallet" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Add money"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -88,6 +93,8 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+          scrollEventThrottle={16}
           contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 116 }]}
         >
           <View style={styles.amountCard}>
@@ -97,7 +104,7 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
                 <Text style={styles.amountHint}>Enter an amount to add</Text>
               </View>
               <View style={styles.walletIcon}>
-                <MaterialCommunityIcons name="wallet-plus-outline" size={24} color="#7C4C00" />
+                <MaterialCommunityIcons name="wallet-plus-outline" size={24} color="#312E81" />
               </View>
             </View>
 
@@ -109,7 +116,7 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
                 onChangeText={handleCustomAmount}
                 keyboardType="number-pad"
                 maxLength={5}
-                selectionColor="#F5A800"
+                selectionColor="#4F46E5"
                 style={styles.amountInput}
                 accessibilityLabel="Top-up amount"
               />
@@ -162,7 +169,7 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
           </View>
 
           <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="shield-check-outline" size={19} color="#A96700" />
+            <MaterialCommunityIcons name="shield-check-outline" size={19} color="#3730A3" />
             <Text style={styles.infoText}>
               Money is added after your payment is verified. Wallet balance does not expire.
             </Text>
@@ -185,27 +192,29 @@ export default function AddMoneyScreen({ amount, onBack, onPay }) {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  keyboardView: { flex: 1, backgroundColor: "#F1F0F5" },
+  keyboardView: { flex: 1, backgroundColor: "#FFFFFF" },
   content: { padding: 16 },
   amountCard: {
     padding: 16,
+    borderWidth: 1,
+    borderColor: "#DEE3E8",
     borderRadius: 22,
     backgroundColor: "#FFFFFF",
   },
   amountTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  amountEyebrow: { color: "#A96700", fontSize: 10, lineHeight: 13, fontWeight: "800", letterSpacing: 0.7 },
+  amountEyebrow: { color: "#3730A3", fontSize: 10, lineHeight: 13, fontWeight: "800", letterSpacing: 0.7 },
   amountHint: { marginTop: 3, color: "#72757B", fontSize: 12, lineHeight: 16, fontWeight: "400" },
   walletIcon: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: "#FFF2CC",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -231,9 +240,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  amountChipSelected: { backgroundColor: "#FFF2CC" },
+  amountChipSelected: { backgroundColor: "#EEF2FF" },
   amountChipText: { color: "#555960", fontSize: 12, lineHeight: 16, fontWeight: "700" },
-  amountChipTextSelected: { color: "#7C4C00" },
+  amountChipTextSelected: { color: "#312E81" },
   chipPressed: { opacity: 0.68, transform: [{ scale: 0.97 }] },
   sectionHeader: {
     marginTop: 24,

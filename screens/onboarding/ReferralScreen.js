@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 38,
     borderRadius: 20,
-    backgroundColor: "#F59E0B"
+    backgroundColor: "#4F46E5"
   },
   sparkA: {
     position: "absolute",
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#F59E0B"
+    backgroundColor: "#4F46E5"
   },
   sparkB: {
     position: "absolute",

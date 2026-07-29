@@ -69,7 +69,7 @@ export default function AppIcon({
   const selectedVariant = variant || (active ? "filled" : "outline");
   const iconName = definition?.[selectedVariant] || definition?.outline || name;
   const iconSize = typeof size === "number" ? size : SIZES[size] || SIZES.md;
-  const iconColor = color || (active ? "#1754E8" : muted ? "#98A2B3" : "#252A31");
+  const iconColor = color || (active ? "#4F46E5" : muted ? "#98A2B3" : "#252A31");
   const IconFamily = definition?.family === "material"
     ? MaterialCommunityIcons
     : definition

@@ -324,8 +324,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#000000ff",
-    zIndex: 4
+    backgroundColor: "#FFFFFF",
+    zIndex: 4,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6
   },
   shell: {
     position: "absolute",
@@ -334,14 +339,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "transparent",
     zIndex: 80,
-    overflow: "hidden"
+    overflow: "visible"
   },
   appBarLayer: {
     width: "100%",
     height: APP_TAB_HEIGHT,
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    borderRadius: 0,
+    borderWidth: 0,
+    borderBottomWidth: 0,
+    borderColor: "transparent",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -349,18 +356,18 @@ const styles = StyleSheet.create({
     paddingTop: 9,
     paddingBottom: 7,
     zIndex: 2,
-    shadowColor: "#0F172A",
-    shadowOpacity: 0,
-    shadowRadius: 14,
+    shadowColor: "#111827",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: -4 },
-    elevation: 0
+    elevation: 8
   },
   appBarClip: {
     position: "absolute",
     left: 0,
     right: 0,
     height: APP_TAB_HEIGHT,
-    overflow: "hidden",
+    overflow: "visible",
     zIndex: 2
   },
   tabSlot: {

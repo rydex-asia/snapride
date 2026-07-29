@@ -522,7 +522,7 @@ export default function SearchingCaptainScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
       <View style={styles.mapArea}>
         <RideRouteMap
           ref={mapRef}

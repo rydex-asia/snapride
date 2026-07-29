@@ -2,9 +2,18 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import AppIcon from "./AppIcon";
 
-export default function SimplePageHeader({ title, eyebrow, onBack, actionLabel, onAction }) {
+export default function SimplePageHeader({
+  title,
+  eyebrow,
+  onBack,
+  actionLabel,
+  onAction,
+  elevated = false,
+  backgroundColor = "#FFFFFF",
+  largeTitle = false,
+}) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { backgroundColor }, elevated && styles.headerElevated]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Go back"
@@ -17,7 +26,7 @@ export default function SimplePageHeader({ title, eyebrow, onBack, actionLabel, 
 
       <View style={styles.copy}>
         {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.title, largeTitle && styles.titleLarge]} numberOfLines={1}>{title}</Text>
       </View>
 
       {actionLabel ? (
@@ -42,16 +51,20 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 12,
     borderRadius: 12,
-    backgroundColor: "#FFF2CC",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E3E5E8",
     alignItems: "center",
     justifyContent: "center",
   },
-  actionLabel: { color: "#8C5900", fontSize: 13, lineHeight: 17, fontWeight: "700" },
+  actionLabel: { color: "#3730A3", fontSize: 13, lineHeight: 17, fontWeight: "700" },
   back: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#F1F2F4",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E3E5E8",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -70,8 +83,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
+    zIndex: 20,
+  },
+  headerElevated: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#E1E3E6",
+    shadowColor: "#17202B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 6,
   },
   pressed: { opacity: 0.6, transform: [{ scale: 0.97 }] },
   rightSpacer: { width: 38, height: 38 },
   title: { color: "#202124", fontSize: 21, lineHeight: 26, fontWeight: "700" },
+  titleLarge: { fontSize: 22, lineHeight: 27, fontWeight: "700" },
 });

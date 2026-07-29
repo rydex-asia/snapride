@@ -18,8 +18,11 @@ function ActionCard({ item, onPress }) {
       <View style={[styles.actionIcon, { backgroundColor: `${item.accent}14` }]}>
         <MaterialCommunityIcons name={item.icon} size={22} color={item.accent} />
       </View>
-      <Text style={styles.actionTitle}>{item.title}</Text>
-      <Text style={styles.actionSubtitle}>{item.subtitle}</Text>
+      <View style={styles.actionCopy}>
+        <Text style={styles.actionTitle}>{item.title}</Text>
+        <Text style={styles.actionSubtitle}>{item.subtitle}</Text>
+      </View>
+      <MaterialCommunityIcons name="chevron-right" size={21} color="#92959B" />
     </Pressable>
   );
 }
@@ -45,7 +48,7 @@ export default function PaymentsScreen({
 }) {
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Payments" subtitle="Manage how you pay and get paid back" onBack={onBack} />
 
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -91,7 +94,6 @@ export default function PaymentsScreen({
 
         <View style={styles.infoCard}>
           <MiniRow icon="shield-check-outline" label="Secure payments" detail="Card and UPI details are masked before checkout." />
-          <View style={styles.divider} />
           <MiniRow icon="timer-sand" label="Fast refunds" detail="Trip cancellations and fare corrections are tracked automatically." />
         </View>
       </ScrollView>
@@ -101,20 +103,17 @@ export default function PaymentsScreen({
 
 const styles = StyleSheet.create({
   actionCard: {
-    flex: 1,
-    minWidth: "47%",
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    minHeight: 150
+    minHeight: 76,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
   },
   actionCardPressed: {
     opacity: 0.86
   },
   actionGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
+    flexDirection: "column",
   },
   actionIcon: {
     width: 46,
@@ -123,15 +122,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  actionCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   actionSubtitle: {
-    marginTop: 8,
+    marginTop: 3,
     color: "#667085",
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "500"
   },
   actionTitle: {
-    marginTop: 12,
     color: "#111827",
     fontSize: 15,
     lineHeight: 19,
@@ -140,11 +139,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 28
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#EEF2FF",
-    marginVertical: 12
   },
   heroBalance: {
     color: "#111827",
@@ -226,11 +220,11 @@ const styles = StyleSheet.create({
   },
   safe: {
     flex: 1,
-    backgroundColor: "#F6F8FC"
+    backgroundColor: "#FFFFFF"
   },
   screen: {
     flex: 1,
-    backgroundColor: "#F1F0F5"
+    backgroundColor: "#FFFFFF"
   },
   sectionBlock: {
     marginBottom: 2

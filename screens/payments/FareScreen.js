@@ -17,7 +17,7 @@ export default function FareScreen({ onBack }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={[]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F6F8FC" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <AccountPageHeader title="Fare breakdown" subtitle="Transparent pricing for your trip" onBack={onBack} />
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
         <View style={styles.totalCard}>
@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
   row: { minHeight: 46, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   rowLabel: { color: "#667085", fontSize: 13, fontWeight: "700" },
   rowValue: { color: "#111827", fontSize: 13, fontWeight: "900" },
-  safe: { flex: 1, backgroundColor: "#F6F8FC" },
-  screen: { flex: 1, backgroundColor: "#F6F8FC" },
+  safe: { flex: 1, backgroundColor: "#FFFFFF" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   sectionTitle: { marginBottom: 8, color: "#111827", fontSize: 16, fontWeight: "900" },
   totalAmount: { marginTop: 4, color: "#111827", fontSize: 34, lineHeight: 40, fontWeight: "900" },
   totalCard: { minHeight: 132, borderRadius: 26, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E8EDF5", padding: 18, flexDirection: "row", alignItems: "center", gap: 14 },

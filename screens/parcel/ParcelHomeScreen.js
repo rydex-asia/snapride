@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 38,
     borderRadius: 26,
-    backgroundColor: "#F1F0F5"
+    backgroundColor: "#FFFFFF"
   },
   nowText: {
     color: "#424242",

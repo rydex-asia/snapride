@@ -123,7 +123,7 @@ export default function ParcelChooseRideScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#F9FAFC" />
+      <StatusBar style="dark" hidden={false} translucent={false} backgroundColor="#FFFFFF" />
       <View style={styles.mapArea}>
         <RideRouteMap
           showStatusBarScrim
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#F5A800",
+    backgroundColor: "#4F46E5",
     borderWidth: 2,
     borderColor: "#FFFFFF",
   },

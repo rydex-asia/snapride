@@ -1,17 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Linking,
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
 const SAFETY_TOOLS = [
   {
@@ -76,6 +75,7 @@ export default function SafetyScreen({
   onOpenAudio,
 }) {
   const insets = useSafeAreaInsets();
+  const [headerElevated, setHeaderElevated] = useState(false);
 
   const handleTool = (key) => {
     if (key === "share") return onShareLiveTrip?.();
@@ -90,17 +90,24 @@ export default function SafetyScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Safety centre" eyebrow="Rydex protection" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Safety centre"
+        onBack={onBack}
+        elevated={headerElevated}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
       <ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
+        onScroll={(event) => setHeaderElevated(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
         contentContainerStyle={[styles.content, { paddingBottom: Math.max(30, insets.bottom + 20) }]}
       >
         <LinearGradient
-          colors={["#FFF0BF", "#FFF8E6", "#FFFFFF"]}
+          colors={["#E0E7FF", "#F5F3FF", "#FFFFFF"]}
           locations={[0, 0.58, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -108,7 +115,7 @@ export default function SafetyScreen({
         >
           <View style={styles.readinessTop}>
             <View style={styles.shieldMark}>
-              <MaterialCommunityIcons name="shield-check" size={25} color="#7C4C00" />
+              <MaterialCommunityIcons name="shield-check" size={25} color="#312E81" />
             </View>
             <View style={styles.readinessCopy}>
               <Text style={styles.readinessEyebrow}>SAFETY STATUS</Text>
@@ -122,7 +129,7 @@ export default function SafetyScreen({
           <View style={styles.readinessItems}>
             {READINESS_ITEMS.map((item) => (
               <View key={item.label} style={styles.readinessItem}>
-                <MaterialCommunityIcons name={item.icon} size={16} color="#7C4C00" />
+                <MaterialCommunityIcons name={item.icon} size={16} color="#312E81" />
                 <View style={styles.readinessItemCopy}>
                   <Text style={styles.readinessItemLabel}>{item.label}</Text>
                   <Text style={styles.readinessItemValue}>{item.value}</Text>
@@ -193,13 +200,13 @@ export default function SafetyScreen({
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
   content: { paddingHorizontal: 16, paddingTop: 14 },
   readinessCard: {
     minHeight: 194,
@@ -219,7 +226,7 @@ const styles = StyleSheet.create({
   readinessCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
   readinessEyebrow: {
     fontFamily: "Inter_600SemiBold",
-    color: "#A96700",
+    color: "#3730A3",
     fontSize: 9,
     lineHeight: 12,
     letterSpacing: 0.8,
@@ -355,13 +362,13 @@ const styles = StyleSheet.create({
     width: 27,
     height: 27,
     borderRadius: 9,
-    backgroundColor: "#FFF2CC",
+    backgroundColor: "#EEF2FF",
     alignItems: "center",
     justifyContent: "center",
   },
   guideNumberText: {
     fontFamily: "Inter_600SemiBold",
-    color: "#8C5900",
+    color: "#3730A3",
     fontSize: 11,
     lineHeight: 15,
   },

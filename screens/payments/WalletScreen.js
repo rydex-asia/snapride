@@ -1,161 +1,188 @@
-import React from "react";
-import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import SimplePageHeader from "../../components/SimplePageHeader";
+import UnifiedPageHeader from "../../components/UnifiedPageHeader";
 
-function ActionButton({ icon, label, primary = false, onPress }) {
+function WalletRow({ icon, title, detail, trailing, onPress, last }) {
+  const content = (
+    <>
+      <View style={styles.rowIcon}>
+        <MaterialCommunityIcons name={icon} size={21} color="#343A44" />
+      </View>
+      <View style={styles.rowCopy}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        <Text style={styles.rowDetail}>{detail}</Text>
+      </View>
+      {trailing || <MaterialCommunityIcons name="chevron-right" size={20} color="#8C9198" />}
+    </>
+  );
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.actionButton,
-        primary && styles.actionButtonPrimary,
-        pressed && styles.pressed,
-      ]}
-    >
-      <MaterialCommunityIcons name={icon} size={20} color={primary ? "#FFFFFF" : "#202124"} />
-      <Text style={[styles.actionLabel, primary && styles.actionLabelPrimary]}>{label}</Text>
-    </Pressable>
+    <>
+      {onPress ? (
+        <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
+          {content}
+        </Pressable>
+      ) : (
+        <View style={styles.row}>{content}</View>
+      )}
+      {!last ? <View style={styles.divider} /> : null}
+    </>
   );
 }
 
-export default function WalletScreen({ onBack, onOpenPaymentMethod, onOpenAddMoney, onOpenTransactions }) {
+export default function WalletScreen({
+  onBack,
+  onOpenPaymentMethod,
+  onOpenAddMoney,
+  onOpenTransactions,
+}) {
   const insets = useSafeAreaInsets();
+  const [headerBorder, setHeaderBorder] = useState(false);
+  const entrance = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(entrance, {
+      toValue: 1,
+      duration: 380,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [entrance]);
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SimplePageHeader title="Wallet" eyebrow="Balance and payments" onBack={onBack} />
+    <View style={styles.safe}>
+      <UnifiedPageHeader
+        title="Wallet"
+        onBack={onBack}
+        elevated={headerBorder}
+        backgroundColor="#FFFFFF"
+        largeTitle
+      />
 
-      <ScrollView
+      <Animated.ScrollView
         style={styles.screen}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: Math.max(32, insets.bottom + 24) }]}
+        onScroll={(event) => setHeaderBorder(event.nativeEvent.contentOffset.y > 4)}
+        scrollEventThrottle={16}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(34, insets.bottom + 24) }]}
       >
-        <View style={styles.balanceSection}>
-          <View style={styles.balanceTop}>
-            <View>
-              <Text style={styles.balanceLabel}>Available balance</Text>
-              <Text style={styles.balanceAmount}>₹0</Text>
-            </View>
-            <View style={styles.walletIcon}>
-              <MaterialCommunityIcons name="wallet-outline" size={25} color="#8C5900" />
-            </View>
-          </View>
-          <Text style={styles.balanceNote}>Use your wallet for rides and parcel deliveries.</Text>
-        </View>
-
-        <View style={styles.actionRow}>
-          <ActionButton
-            icon="plus"
-            label="Add money"
-            primary
-            onPress={() => onOpenAddMoney?.("₹200")}
-          />
-          <ActionButton
-            icon="credit-card-outline"
-            label="Payment methods"
-            onPress={onOpenPaymentMethod}
-          />
-        </View>
-
-        <View style={styles.sectionHeading}>
-          <Text style={styles.sectionTitle}>Recent activity</Text>
-          <Pressable onPress={onOpenTransactions} hitSlop={8} style={({ pressed }) => pressed && styles.pressed}>
-            <Text style={styles.viewAll}>View all</Text>
-          </Pressable>
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenTransactions}
-          style={({ pressed }) => [styles.activitySection, pressed && styles.rowPressed]}
+        <Animated.View
+          style={{
+            opacity: entrance,
+            transform: [{
+              translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+            }],
+          }}
         >
-          <View style={styles.activityIcon}>
-            <MaterialCommunityIcons name="receipt-text-outline" size={22} color="#555960" />
-          </View>
-          <View style={styles.activityCopy}>
-            <Text style={styles.emptyTitle}>No wallet activity yet</Text>
-            <Text style={styles.emptyText}>Top-ups and wallet payments will appear here.</Text>
-          </View>
-          <MaterialCommunityIcons name="chevron-right" size={21} color="#92959B" />
-        </Pressable>
+          <View style={styles.balanceSection}>
+            <View style={styles.balanceTop}>
+              <View>
+                <Text style={styles.balanceLabel}>Rydex balance</Text>
+                <Text style={styles.balanceAmount}>₹0</Text>
+              </View>
+              <View style={styles.protected}>
+                <MaterialCommunityIcons name="shield-check-outline" size={16} color="#312E81" />
+                <Text style={styles.protectedText}>Protected</Text>
+              </View>
+            </View>
+            <Text style={styles.balanceDescription}>Pay faster for rides and parcel deliveries.</Text>
 
-        <Text style={styles.sectionTitleStandalone}>Wallet settings</Text>
-        <View style={styles.settingsGroup}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onOpenPaymentMethod}
-            style={({ pressed }) => [styles.settingRow, pressed && styles.rowPressed]}
-          >
-            <View style={styles.settingIcon}>
-              <MaterialCommunityIcons name="credit-card-outline" size={21} color="#394150" />
+            <View style={styles.balanceActions}>
+              <Pressable
+                onPress={() => onOpenAddMoney?.("₹200")}
+                style={({ pressed }) => [styles.addMoney, pressed && styles.primaryPressed]}
+              >
+                <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
+                <Text style={styles.addMoneyText}>Add money</Text>
+              </Pressable>
+              <Pressable
+                onPress={onOpenTransactions}
+                style={({ pressed }) => [styles.historyButton, pressed && styles.pressed]}
+              >
+                <MaterialCommunityIcons name="history" size={19} color="#202124" />
+                <Text style={styles.historyText}>History</Text>
+              </Pressable>
             </View>
-            <View style={styles.settingCopy}>
-              <Text style={styles.settingTitle}>Default payment method</Text>
-              <Text style={styles.settingDetail}>Cash</Text>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" size={21} color="#92959B" />
-          </Pressable>
-          <View style={styles.divider} />
-          <View style={styles.settingRow}>
-            <View style={styles.settingIcon}>
-              <MaterialCommunityIcons name="shield-check-outline" size={21} color="#394150" />
-            </View>
-            <View style={styles.settingCopy}>
-              <Text style={styles.settingTitle}>Payment security</Text>
-              <Text style={styles.settingDetail}>Protected and encrypted</Text>
-            </View>
-            <MaterialCommunityIcons name="check-circle" size={20} color="#A96700" />
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+
+          <View style={styles.activityHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>Recent activity</Text>
+              <Text style={styles.sectionCaption}>Payments and refunds will appear here</Text>
+            </View>
+            <Pressable onPress={onOpenTransactions} hitSlop={8}>
+              <Text style={styles.viewAll}>View all</Text>
+            </Pressable>
+          </View>
+          <View style={styles.emptyActivity}>
+            <MaterialCommunityIcons name="receipt-text-outline" size={22} color="#626872" />
+            <Text style={styles.emptyText}>No wallet activity yet</Text>
+          </View>
+
+          <Text style={styles.sectionTitleStandalone}>WALLET SETTINGS</Text>
+          <View style={styles.outlinedSection}>
+            <WalletRow
+              icon="credit-card-outline"
+              title="Payment methods"
+              detail="UPI, cards and cash"
+              onPress={onOpenPaymentMethod}
+            />
+            <WalletRow
+              icon="cash-refund"
+              title="Refund destination"
+              detail="Original payment method"
+              trailing={<MaterialCommunityIcons name="check-circle-outline" size={20} color="#3730A3" />}
+            />
+            <WalletRow
+              icon="shield-lock-outline"
+              title="Wallet security"
+              detail="Encrypted payment protection"
+              last
+              trailing={<Text style={styles.secureLabel}>Secure</Text>}
+            />
+          </View>
+
+          <Text style={styles.legalNote}>Wallet balance does not expire and cannot be withdrawn as cash.</Text>
+        </Animated.View>
+      </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  actionButton: {
-    flex: 1,
-    height: 50,
-    borderRadius: 14,
-    backgroundColor: "#FFFFFF",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-  },
-  actionButtonPrimary: { backgroundColor: "#202124" },
-  actionLabel: { color: "#202124", fontSize: 13, lineHeight: 17, fontWeight: "700" },
-  actionLabelPrimary: { color: "#FFFFFF" },
-  actionRow: { marginTop: 12, flexDirection: "row", gap: 10 },
-  activityCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
-  activityIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
-  activitySection: { minHeight: 84, borderRadius: 18, paddingHorizontal: 14, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center" },
-  balanceAmount: { marginTop: 5, color: "#202124", fontSize: 34, lineHeight: 40, fontWeight: "700" },
-  balanceLabel: { color: "#656970", fontSize: 13, lineHeight: 17, fontWeight: "500" },
-  balanceNote: { marginTop: 15, color: "#747780", fontSize: 12, lineHeight: 17, fontWeight: "400" },
-  balanceSection: { minHeight: 142, borderRadius: 20, padding: 18, backgroundColor: "#FFFFFF", justifyContent: "space-between" },
-  balanceTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
-  content: { paddingHorizontal: 16, paddingTop: 16 },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 70, backgroundColor: "#E2E4E7" },
-  emptyText: { marginTop: 4, color: "#747780", fontSize: 12, lineHeight: 17, fontWeight: "400" },
-  emptyTitle: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  pressed: { opacity: 0.65, transform: [{ scale: 0.99 }] },
-  rowPressed: { backgroundColor: "#F7F8F9" },
   safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  screen: { flex: 1, backgroundColor: "#F1F0F5" },
-  sectionHeading: { marginTop: 25, marginBottom: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
-  sectionTitleStandalone: { marginTop: 25, marginBottom: 10, color: "#202124", fontSize: 17, lineHeight: 22, fontWeight: "600" },
-  settingCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
-  settingDetail: { marginTop: 3, color: "#747780", fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  settingIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#F0F1F3", alignItems: "center", justifyContent: "center" },
-  settingRow: { minHeight: 74, paddingHorizontal: 14, flexDirection: "row", alignItems: "center" },
-  settingTitle: { color: "#202124", fontSize: 14, lineHeight: 19, fontWeight: "600" },
-  settingsGroup: { borderRadius: 18, overflow: "hidden", backgroundColor: "#FFFFFF" },
-  viewAll: { color: "#8C5900", fontSize: 13, lineHeight: 17, fontWeight: "700" },
-  walletIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: "#FFF2CC", alignItems: "center", justifyContent: "center" },
+  screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { paddingHorizontal: 18, paddingTop: 15 },
+  balanceSection: { paddingHorizontal: 4, paddingBottom: 25 },
+  balanceTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
+  balanceLabel: { color: "#66717F", fontSize: 13, lineHeight: 17, fontWeight: "600" },
+  balanceAmount: { marginTop: 5, color: "#16191D", fontSize: 44, lineHeight: 50, fontWeight: "800", letterSpacing: -1.2 },
+  balanceDescription: { marginTop: 8, color: "#747982", fontSize: 12, lineHeight: 17 },
+  protected: { height: 32, paddingHorizontal: 11, borderWidth: 1, borderColor: "#DCE2E7", borderRadius: 16, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", gap: 5 },
+  protectedText: { color: "#312E81", fontSize: 11, lineHeight: 14, fontWeight: "700" },
+  balanceActions: { marginTop: 22, flexDirection: "row", gap: 10 },
+  addMoney: { flex: 1, height: 49, borderRadius: 15, backgroundColor: "#202124", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  addMoneyText: { color: "#FFFFFF", fontSize: 14, lineHeight: 19, fontWeight: "700" },
+  historyButton: { width: 112, height: 49, borderWidth: 1, borderColor: "#DDE0E3", borderRadius: 15, backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  historyText: { color: "#202124", fontSize: 13, lineHeight: 17, fontWeight: "700" },
+  activityHeader: { marginTop: 26, marginBottom: 11, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" },
+  sectionTitle: { color: "#16191D", fontSize: 18, lineHeight: 23, fontWeight: "700" },
+  sectionCaption: { marginTop: 2, color: "#7B8088", fontSize: 11, lineHeight: 15 },
+  viewAll: { color: "#3730A3", fontSize: 12, lineHeight: 16, fontWeight: "700" },
+  emptyActivity: { minHeight: 72, paddingHorizontal: 16, borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 18, flexDirection: "row", alignItems: "center", gap: 11 },
+  emptyText: { color: "#5F6975", fontSize: 14, lineHeight: 18, fontWeight: "500" },
+  sectionTitleStandalone: { marginTop: 27, marginBottom: 11, marginLeft: 7, color: "#3730A3", fontSize: 12, lineHeight: 16, fontWeight: "800", letterSpacing: 0.55 },
+  outlinedSection: { overflow: "hidden", borderWidth: 1, borderColor: "#DEE3E8", borderRadius: 22, backgroundColor: "#FFFFFF" },
+  row: { minHeight: 80, paddingHorizontal: 16, flexDirection: "row", alignItems: "center" },
+  rowIcon: { width: 42, alignItems: "flex-start", justifyContent: "center" },
+  rowCopy: { flex: 1, minWidth: 0, marginLeft: 12 },
+  rowTitle: { color: "#16191D", fontSize: 15, lineHeight: 20, fontWeight: "700" },
+  rowDetail: { marginTop: 3, color: "#66717F", fontSize: 12.5, lineHeight: 17 },
+  divider: { height: StyleSheet.hairlineWidth, marginLeft: 58, backgroundColor: "#DEE3E8" },
+  secureLabel: { color: "#312E81", fontSize: 11, lineHeight: 15, fontWeight: "700" },
+  legalNote: { marginTop: 17, paddingHorizontal: 2, color: "#858A92", fontSize: 11, lineHeight: 16 },
+  pressed: { opacity: 0.58 },
+  primaryPressed: { opacity: 0.82, transform: [{ scale: 0.99 }] },
 });
