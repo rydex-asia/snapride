@@ -50,7 +50,7 @@ services:
         sync: false
       - key: CASHFREE_API_VERSION
         value: 2025-01-01
-        sync: false
+
       - key: SENTRY_DSN
         sync: false
       - key: SENTRY_ENVIRONMENT
